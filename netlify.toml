@@ -1,3 +1,3 @@
 [build]
   publish = "."
-  command = "echo 'Publishing static ASTRONAV // EXO-COMMAND v4.2 bundle'"
+  command = "node build_bundle.mjs"
