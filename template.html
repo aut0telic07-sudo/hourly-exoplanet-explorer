@@ -1,0 +1,2188 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASTRONAV // EXO-COMMAND v4.2 — Deep-Space Exoplanet Observatory</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <script src="data/exoplanets_bundle.js"></script>
+  <script src="data/concept_art_bundle.js"></script>
+  <script src="app_spaceship.js"></script>
+  <style>
+    /* Standalone Sci-Fi Command Deck Styling & Fallback Layout Engine */
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background-color: #030712;
+      background-image:
+        radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.07) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(0, 255, 157, 0.05) 0%, transparent 40%),
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+      color: #e2f1ff;
+      font-family: 'Rajdhani', 'Segoe UI', 'Consolas', system-ui, -apple-system, sans-serif;
+      font-size: 13px;
+      overflow-x: hidden;
+    }
+
+    .scifi-panel {
+      background: linear-gradient(145deg, rgba(8, 17, 34, 0.92) 0%, rgba(4, 10, 22, 0.96) 100%);
+      border: 1px solid rgba(0, 240, 255, 0.28);
+      box-shadow: 0 0 24px rgba(0, 240, 255, 0.07), inset 0 0 18px rgba(0, 240, 255, 0.04);
+      position: relative;
+      border-radius: 12px;
+    }
+
+    .scifi-panel::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 14px; width: 42px; height: 2px;
+      background: #00f0ff;
+      box-shadow: 0 0 10px #00f0ff;
+      pointer-events: none;
+    }
+
+    .scifi-card {
+      background: rgba(6, 14, 28, 0.85);
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      border-radius: 10px;
+      transition: all 0.18s ease;
+    }
+
+    .scifi-card:hover {
+      border-color: rgba(0, 240, 255, 0.65);
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.18);
+    }
+
+    .scifi-card-active {
+      background: linear-gradient(90deg, rgba(0, 240, 255, 0.16) 0%, rgba(6, 14, 28, 0.92) 100%);
+      border: 1px solid #00f0ff !important;
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.28), inset 3px 0 0 #00f0ff;
+    }
+
+    .scifi-btn {
+      background: rgba(6, 18, 36, 0.9);
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      color: #bae6fd;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: all 0.16s ease;
+      cursor: pointer;
+    }
+
+    .scifi-btn:hover {
+      border-color: #00f0ff;
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
+    }
+
+    .scifi-btn-active {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.28) 0%, rgba(0, 140, 255, 0.35) 100%);
+      border: 1px solid #00f0ff;
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(0, 240, 255, 0.45);
+    }
+
+    .scifi-input {
+      background: rgba(3, 9, 20, 0.92);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: #e2f1ff;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    .scifi-input:focus {
+      outline: none;
+      border-color: #00f0ff;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    }
+
+    .neon-cyan { color: #00f0ff; text-shadow: 0 0 8px rgba(0, 240, 255, 0.45); }
+    .neon-emerald { color: #00ff9d; text-shadow: 0 0 8px rgba(0, 255, 157, 0.45); }
+    .neon-amber { color: #ffb703; text-shadow: 0 0 8px rgba(255, 183, 3, 0.45); }
+    .neon-crimson { color: #ff2a6d; text-shadow: 0 0 8px rgba(255, 42, 109, 0.45); }
+
+    .scanline-overlay {
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0, 240, 255, 0.03) 50%,
+        rgba(0, 240, 255, 0.03)
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+    }
+
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-track { background: rgba(3, 7, 18, 0.6); }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.35); border-radius: 9999px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #00f0ff; }
+    canvas { display: block; }
+  </style>
+</head>
+<body class="min-h-screen p-3 md:p-5 space-y-4">
+  <div class="max-w-[1680px] mx-auto space-y-4">
+
+    <!-- ========================================================================= -->
+    <!-- TOP STARSHIP BRIDGE COMMAND HEADER                                        -->
+    <!-- ========================================================================= -->
+    <header class="scifi-panel p-4 md:p-5">
+      <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div class="space-y-1.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-md text-xs font-bold tracking-wider uppercase bg-cyan-950/80 border border-cyan-400/60 neon-cyan">
+              <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+              DEEP-SPACE TELEMETRY LINK // ONLINE
+            </span>
+            <span id="sync-timestamp-badge" class="text-xs font-mono px-3 py-1 rounded-md bg-slate-900/90 border border-cyan-500/30 text-cyan-200">
+              SYNC EPOCH: LOADING...
+            </span>
+            <span class="text-xs font-mono px-3 py-1 rounded-md bg-slate-900/90 border border-emerald-500/30 text-emerald-300">
+              FEEDS: NASA TAP [PSCOMPPARS] + OEC ASTROMETRIC MIRROR
+            </span>
+          </div>
+
+          <div class="flex items-baseline gap-3 pt-1">
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-wider uppercase neon-cyan">
+              ASTRONAV // EXO-COMMAND v4.2
+            </h1>
+            <span class="hidden sm:inline-block text-xs font-mono text-cyan-300/70">
+              [INTERSTELLAR CARTOGRAPHY &amp; PLANETARY RECONNAISSANCE DECK]
+            </span>
+          </div>
+        </div>
+
+        <!-- Live Telemetry Matrix Readouts -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 shrink-0 font-mono">
+          <div class="scifi-card px-3.5 py-2 border-l-2 border-l-cyan-400">
+            <div class="text-xs text-cyan-300/70 uppercase">CONFIRMED WORLDS</div>
+            <div id="stat-total-planets" class="text-xl font-bold neon-cyan">6,451</div>
+            <div class="text-xs text-slate-400">SECTOR ARCHIVE</div>
+          </div>
+          <div class="scifi-card px-3.5 py-2 border-l-2 border-l-amber-400">
+            <div class="text-xs text-amber-300/70 uppercase">STELLAR SYSTEMS</div>
+            <div id="stat-total-stars" class="text-xl font-bold neon-amber">4,847</div>
+            <div id="stat-multi-systems" class="text-xs text-slate-400">1,079 MULTI-ORB</div>
+          </div>
+          <div class="scifi-card px-3.5 py-2 border-l-2 border-l-emerald-400">
+            <div class="text-xs text-emerald-300/70 uppercase">BIOSIGNATURE HZ</div>
+            <div id="stat-hz-count" class="text-xl font-bold neon-emerald">82</div>
+            <div class="text-xs text-slate-400">CLASS-M CANDIDATES</div>
+          </div>
+          <div class="scifi-card px-3.5 py-2 border-l-2 border-l-rose-400">
+            <div class="text-xs text-rose-300/70 uppercase">2026 DETECTIONS</div>
+            <div id="stat-2026-count" class="text-xl font-bold neon-crimson">361</div>
+            <div class="text-xs text-slate-400">TESS / JWST ARRAY</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Command Deck Navigation Modules & Hyper-Jump Presets -->
+      <div class="mt-4 pt-3.5 border-t border-cyan-500/20 flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-3">
+        <div class="flex flex-wrap gap-2" role="tablist">
+          <button onclick="switchMainTab('explorer')" id="tab-btn-explorer" class="scifi-btn scifi-btn-active px-3.5 py-2">
+            [01] TACTICAL PLANETARY SCANNER (ALL 6,451)
+          </button>
+          <button onclick="switchMainTab('spaceship')" id="tab-btn-spaceship" class="scifi-btn px-3.5 py-2 border-emerald-400/60 text-emerald-300">
+            [02] STARSHIP FREE-ROAM // CSV ASTRONAV-PRIME
+          </button>
+          <button onclick="switchMainTab('orrery')" id="tab-btn-orrery" class="scifi-btn px-3.5 py-2">
+            [03] 3D HOLO-ORRERY &amp; KEPLERIAN LAB
+          </button>
+          <button onclick="switchMainTab('starmap')" id="tab-btn-starmap" class="scifi-btn px-3.5 py-2">
+            [04] 3D GALACTIC SECTOR RADAR
+          </button>
+          <button onclick="switchMainTab('gallery')" id="tab-btn-gallery" class="scifi-btn px-3.5 py-2">
+            [05] 6-CHANNEL SENSOR SUITE &amp; RECON ART
+          </button>
+          <button onclick="switchMainTab('analytics')" id="tab-btn-analytics" class="scifi-btn px-3.5 py-2">
+            [06] ARCHIVE TELEMETRY &amp; CODEX
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1.5 font-mono">
+          <span class="text-xs text-cyan-400 uppercase mr-1">QUICK WARP:</span>
+          <button onclick="warpToPlanet('TRAPPIST-1 e')" class="scifi-btn px-2.5 py-1">TRAPPIST-1 e</button>
+          <button onclick="warpToPlanet('Wolf 1069 b')" class="scifi-btn px-2.5 py-1">WOLF 1069 b</button>
+          <button onclick="warpToPlanet('Proxima Cen b')" class="scifi-btn px-2.5 py-1">PROXIMA b</button>
+          <button onclick="warpToPlanet('55 Cnc e')" class="scifi-btn px-2.5 py-1">55 CNC e [LAVA]</button>
+          <button onclick="warpToPlanet('K2-18 b')" class="scifi-btn px-2.5 py-1">K2-18 b [HYCEAN]</button>
+          <button onclick="warpToPlanet('HD 110067 b')" class="scifi-btn px-2.5 py-1">HD 110067 [6-RES]</button>
+          <button onclick="warpToPlanet('Kepler-16 b')" class="scifi-btn px-2.5 py-1">KEPLER-16 b [BINARY]</button>
+          <button onclick="warpToPlanet('TOI-2431 b')" class="scifi-btn px-2.5 py-1">TOI-2431 b [2026]</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================================================= -->
+    <!-- MODULE 01: TACTICAL PLANETARY SCANNER & 3D RAYCAST SHADER                 -->
+    <!-- ========================================================================= -->
+    <section id="panel-explorer" class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+      <!-- Left Astrometric Target Matrix (4 cols) -->
+      <aside class="lg:col-span-4 scifi-panel p-4 flex flex-col h-[880px]">
+        <div class="space-y-2.5 pb-3 border-b border-cyan-500/20">
+          <div class="flex items-center justify-between font-mono">
+            <span class="text-sm font-bold tracking-wider uppercase neon-cyan">// TARGET ACQUISITION MATRIX</span>
+            <span id="filtered-count-badge" class="text-xs px-2.5 py-0.5 rounded bg-cyan-950/90 border border-cyan-400/40 text-cyan-300">
+              166 TARGETS
+            </span>
+          </div>
+
+          <input
+            id="search-input"
+            type="text"
+            oninput="applyFilters()"
+            placeholder="ENTER DESIGNATION, HOST STAR, OR SENSOR ARRAY..."
+            class="scifi-input w-full px-3 py-2 font-mono"
+          />
+
+          <div class="grid grid-cols-2 gap-2 font-mono">
+            <select id="filter-class" onchange="applyFilters()" class="scifi-input px-2.5 py-1.5">
+              <option value="ALL">CLASS: ALL BODIES</option>
+              <option value="Terrestrial World">CLASS-M // TERRESTRIAL</option>
+              <option value="Super-Earth">SUPER-EARTH LITHIC</option>
+              <option value="Hycean / Sub-Neptune">HYCEAN OCEANIC</option>
+              <option value="Lava World">CLASS-Y // MAGMA WORLD</option>
+              <option value="Mini-Neptune">MINI-NEPTUNE</option>
+              <option value="Ice Giant / Neptunian">CRYO ICE GIANT</option>
+              <option value="Gas Giant / Jovian">JOVIAN GAS GIANT</option>
+              <option value="Hot Jupiter">ROCHE HOT JUPITER</option>
+            </select>
+
+            <select id="filter-hz" onchange="applyFilters()" class="scifi-input px-2.5 py-1.5">
+              <option value="ALL">ZONE: ALL ORBITS</option>
+              <option value="HZ_ANY">HABITABLE BAND (ALL)</option>
+              <option value="Conservative HZ">CONSERVATIVE HZ</option>
+              <option value="Optimistic HZ">OPTIMISTIC HZ</option>
+              <option value="Temperate Zone">TEMPERATE BAND</option>
+              <option value="Inner Warm/Scorched">SCORCHED INNER</option>
+              <option value="Outer Cryo Zone">DEEP CRYO OUTER</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 font-mono">
+            <select id="filter-era" onchange="applyFilters()" class="scifi-input px-2.5 py-1.5">
+              <option value="ALL">EPOCH: ALL YEARS</option>
+              <option value="2026">2026 DETECTIONS ONLY</option>
+              <option value="2025_2026">2025–2026 RECENT</option>
+              <option value="MULTI">MULTI-PLANET ARCHITECTURES</option>
+              <option value="HIGH_ESI">HIGH BIOSCORE (ESI &ge; 0.80)</option>
+            </select>
+
+            <select id="sort-by" onchange="applyFilters()" class="scifi-input px-2.5 py-1.5">
+              <option value="esi_desc">SORT: ESI BIOSCORE</option>
+              <option value="year_desc">SORT: LATEST EPOCH</option>
+              <option value="dist_asc">SORT: PROXIMITY TO SOL</option>
+              <option value="rade_asc">SORT: RADIUS ASCENDING</option>
+              <option value="eqt_desc">SORT: THERMAL FLUX</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-1 font-mono">
+            <button onclick="toggleContinuousAutoScan()" id="btn-auto-scan" class="scifi-btn px-2 py-1.5 text-xs border-emerald-400/50 text-emerald-300">
+              AUTO-SCANNER: OFF
+            </button>
+            <button onclick="triggerRandomDiscovery()" class="scifi-btn px-2 py-1.5 text-xs border-cyan-400/60 text-cyan-200">
+              RANDOM JUMP (6,451)
+            </button>
+          </div>
+        </div>
+
+        <div id="planet-list-container" class="flex-1 overflow-y-auto custom-scroll space-y-2 pr-1 pt-3 font-mono">
+        </div>
+        <div class="pt-2 border-t border-cyan-500/20 flex items-center justify-between font-mono text-xs">
+          <span id="visible-range-label" class="text-slate-400">SHOWING 80 TARGETS</span>
+          <button onclick="loadMorePlanets()" id="btn-load-more" class="scifi-btn px-3 py-1">
+            + LOAD NEXT 100
+          </button>
+        </div>
+      </aside>
+
+      <!-- Right Holographic Viewport & Astrometric Dossier (8 cols) -->
+      <main class="lg:col-span-8 space-y-4">
+
+        <!-- Main Holographic Sensor Viewport -->
+        <div class="scifi-panel p-4 space-y-3">
+          <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-2 border-b border-cyan-500/20 pb-3">
+            <div>
+              <div class="flex flex-wrap items-center gap-2.5 font-mono">
+                <span class="text-xs px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400 text-cyan-300 font-bold">LOCKED</span>
+                <h2 id="selected-planet-title" class="text-2xl font-extrabold tracking-wide neon-cyan">TRAPPIST-1 e</h2>
+                <span id="selected-planet-class-badge" class="px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-950/90 border border-emerald-400/70 neon-emerald">
+                  Terrestrial World
+                </span>
+                <span id="selected-planet-hz-badge" class="px-2.5 py-0.5 rounded text-xs font-mono bg-slate-900 border border-cyan-500/40 text-cyan-200">
+                  Conservative HZ
+                </span>
+              </div>
+              <p id="selected-planet-subtitle" class="text-xs font-mono text-slate-300 mt-1">
+                HOST: TRAPPIST-1 (M8.0 V) // RANGE: 12.43 PC (40.5 LY) // ORBITAL ARCHITECTURE: 7 BODIES
+              </p>
+            </div>
+
+            <!-- 5 Sci-Fi Sensor Camera Modes -->
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button onclick="setArtViewMode('orbital')" id="art-mode-orbital" class="scifi-btn scifi-btn-active px-2.5 py-1.5">
+                3D ORBITAL RAYCAST
+              </button>
+              <button onclick="setArtViewMode('surface')" id="art-mode-surface" class="scifi-btn px-2.5 py-1.5">
+                LANDER HORIZON CAM
+              </button>
+              <button onclick="setArtViewMode('magneto')" id="art-mode-magneto" class="scifi-btn px-2.5 py-1.5">
+                MAGNETOSPHERE FLUX
+              </button>
+              <button onclick="setArtViewMode('interior')" id="art-mode-interior" class="scifi-btn px-2.5 py-1.5">
+                CORE TOMOGRAPHY
+              </button>
+              <button onclick="setArtViewMode('scale')" id="art-mode-scale" class="scifi-btn px-2.5 py-1.5">
+                SIZE MATRIX
+              </button>
+              <button onclick="exportCurrentCanvas()" class="scifi-btn px-2.5 py-1.5 border-emerald-400/50 text-emerald-300">
+                CAPTURE HOLO-PNG
+              </button>
+            </div>
+          </div>
+
+          <!-- High-Resolution 3D Raycast & Shader Canvas -->
+          <div class="relative rounded-xl overflow-hidden border border-cyan-400/40 bg-black shadow-inner">
+            <canvas id="artistic-main-canvas" width="1120" height="480" class="w-full h-[400px] md:h-[450px] cursor-grab active:cursor-grabbing"></canvas>
+            <div class="absolute inset-0 scanline-overlay"></div>
+
+            <!-- Top-Right Telemetry Readout Overlay -->
+            <div class="absolute top-3 right-3 bg-slate-950/80 backdrop-blur-md border border-cyan-400/40 rounded-lg px-3 py-2 font-mono text-xs space-y-1 pointer-events-none">
+              <div class="text-cyan-400 font-bold">SENSOR TELEMETRY // LIVE</div>
+              <div id="hud-overlay-line1" class="text-slate-200">SURFACE GRAVITY: 0.82 G</div>
+              <div id="hud-overlay-line2" class="text-slate-200">ESCAPE VELOCITY: 9.6 KM/S</div>
+              <div id="hud-overlay-line3" class="text-emerald-300">ESI BIOSCORE: 0.965</div>
+            </div>
+
+            <!-- Bottom Controls Bar -->
+            <div class="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 pointer-events-none font-mono">
+              <div id="canvas-caption-pill" class="pointer-events-auto bg-slate-950/85 backdrop-blur-md text-cyan-100 border border-cyan-500/40 rounded-lg px-3 py-1.5 text-xs max-w-xl">
+                3D Spherical Raycaster Active: Drag horizontally on globe to rotate planetary longitude.
+              </div>
+              <div class="pointer-events-auto flex flex-wrap items-center gap-3 bg-slate-950/85 backdrop-blur-md text-cyan-200 border border-cyan-500/40 rounded-lg px-3 py-1.5 text-xs">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="toggle-atmo-glow" checked class="accent-cyan-400" />
+                  <span>ATMO &amp; CLOUDS</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="toggle-hud-labels" checked class="accent-cyan-400" />
+                  <span>TARGET RETICLES</span>
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" id="toggle-rings" class="accent-cyan-400" />
+                  <span>FORCE RING SYSTEM</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sibling Planetary Bodies in System -->
+          <div id="sibling-planets-bar" class="flex flex-wrap items-center gap-1.5 pt-1 font-mono">
+          </div>
+        </div>
+
+        <!-- Lower Tactical Readout: 10-Metric Telemetry Grid + Deep Environmental Synthesis -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div class="md:col-span-5 scifi-panel p-4 space-y-2.5">
+            <div class="flex items-center justify-between border-b border-cyan-500/20 pb-2 font-mono">
+              <h3 class="text-xs font-bold uppercase tracking-wider neon-cyan">// PHYSICAL TELEMETRY MATRIX</h3>
+              <span class="text-xs text-slate-400">SI / SOLAR UNITS</span>
+            </div>
+            <div id="metrics-grid" class="grid grid-cols-2 gap-2 font-mono text-xs">
+            </div>
+          </div>
+
+          <div class="md:col-span-7 scifi-panel p-4 space-y-2.5">
+            <div class="flex items-center justify-between border-b border-cyan-500/20 pb-2 font-mono">
+              <h3 class="text-xs font-bold uppercase tracking-wider neon-emerald">// XENO-PLANETOLOGY &amp; ATMOSPHERIC BRIEFING</h3>
+              <span class="text-xs text-slate-400">SYNTHESIS ENGINE</span>
+            </div>
+            <div id="scientific-explanation-box" class="space-y-2.5 text-xs leading-relaxed text-slate-200">
+            </div>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- MODULE 02: FREE-ROAMING FUTURISTIC SPACESHIP (CSV "ASTRONAV-PRIME")       -->
+    <!-- ========================================================================= -->
+    <section id="panel-spaceship" class="hidden space-y-4">
+      <div class="scifi-panel p-4 md:p-5 space-y-4">
+        <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-3 border-b border-cyan-500/20 pb-3">
+          <div>
+            <div class="flex flex-wrap items-center gap-2 font-mono">
+              <span class="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-400 text-emerald-300 text-xs font-bold">FREE-ROAM ACTIVE</span>
+              <h2 class="text-xl font-extrabold uppercase tracking-wider neon-cyan">
+                // CSV "ASTRONAV-PRIME" — INTERSTELLAR EXPLORATION VESSEL
+              </h2>
+            </div>
+            <p class="text-xs font-mono text-slate-300 mt-1">
+              Walk freely across the 3D Starship Bridge Deck (`WASD` + `Mouse Drag` / `Arrow Keys`, `Shift` to sprint, `F` to interact with stations) OR switch to 6-DOF Cockpit Flight to fly through all 4,847 real star systems!
+            </p>
+          </div>
+
+          <!-- Switch between Bridge Interior Walkaround & Exterior 6-DOF Cockpit Flight -->
+          <div class="flex flex-wrap items-center gap-2 font-mono">
+            <button onclick="SpaceshipRoam.setRoamSubMode('bridge')" id="roam-btn-bridge" class="scifi-btn scifi-btn-active px-3 py-1.5">
+              1. 3D BRIDGE WALKAROUND
+            </button>
+            <button onclick="SpaceshipRoam.setRoamSubMode('flight')" id="roam-btn-flight" class="scifi-btn px-3 py-1.5">
+              2. 3D INTERSTELLAR FLIGHT
+            </button>
+            <button onclick="SpaceshipRoam.toggleFlightCameraView()" id="btn-flight-cam-view" class="scifi-btn px-3 py-1.5 border-cyan-400/60 text-cyan-200">
+              VIEW: 3D STARSHIP CHASE CAM
+            </button>
+            <button onclick="SpaceshipRoam.resetCameraView()" class="scifi-btn px-2.5 py-1.5">
+              RESET VIEW
+            </button>
+            <button onclick="SpaceshipRoam.flyToNearestUnvisitedSystem()" class="scifi-btn px-3 py-1.5 border-amber-400/60 text-amber-300">
+              FLY TO NEXT NEARBY SYSTEM
+            </button>
+            <button onclick="SpaceshipRoam.engageAutopilotToSelected()" class="scifi-btn px-3 py-1.5 border-emerald-400/60 text-emerald-300">
+              AUTOPILOT WARP TO TARGET [F]
+            </button>
+          </div>
+        </div>
+
+        <!-- Galactic Sector Quick-Jump Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-2 bg-slate-950/80 border border-cyan-500/30 rounded-lg px-3.5 py-2 font-mono text-xs">
+          <span class="text-cyan-300 font-bold">// 3D GALACTIC SECTOR HYPER-JUMPS (3,600 PC EXPANDED UNIVERSE):</span>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <button onclick="SpaceshipRoam.jumpToSector('sol')" class="scifi-btn px-2.5 py-1 text-cyan-200">01 // SOL LOCAL BUBBLE</button>
+            <button onclick="SpaceshipRoam.jumpToSector('orion')" class="scifi-btn px-2.5 py-1 text-emerald-300">02 // ORION-CYGNUS ARM</button>
+            <button onclick="SpaceshipRoam.jumpToSector('perseus')" class="scifi-btn px-2.5 py-1 text-purple-300">03 // PERSEUS FRONTIER</button>
+            <button onclick="SpaceshipRoam.jumpToSector('sagittarius')" class="scifi-btn px-2.5 py-1 text-amber-300">04 // SAGITTARIUS CORE</button>
+            <button onclick="SpaceshipRoam.jumpToSector('halo')" class="scifi-btn px-2.5 py-1 text-rose-300">05 // GALACTIC HALO RIM</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <!-- Main 3D Free-Roam Spaceship Canvas (9 cols) -->
+          <div class="lg:col-span-9 relative rounded-xl overflow-hidden border border-cyan-400/50 bg-black">
+            <canvas id="spaceship-roam-canvas" width="1120" height="580" class="w-full h-[540px] cursor-pointer"></canvas>
+            <div class="absolute inset-0 scanline-overlay"></div>
+
+            <!-- On-Screen Touch / Click Navigation Pad (Bottom-Right Above Bar) -->
+            <div class="absolute bottom-16 right-4 bg-slate-950/88 backdrop-blur-md border border-cyan-400/50 rounded-xl p-2.5 font-mono text-xs space-y-1.5 shadow-lg">
+              <div class="text-center text-cyan-300 font-bold text-xs">ON-SCREEN NAV PAD</div>
+              <div class="grid grid-cols-3 gap-1.5">
+                <button onmousedown="SpaceshipRoam.setPadHold('turnL',true)" onmouseup="SpaceshipRoam.setPadHold('turnL',false)" onmouseleave="SpaceshipRoam.setPadHold('turnL',false)" class="scifi-btn px-2.5 py-1.5">&#8630; TURN L</button>
+                <button onmousedown="SpaceshipRoam.setPadHold('fwd',true)" onmouseup="SpaceshipRoam.setPadHold('fwd',false)" onmouseleave="SpaceshipRoam.setPadHold('fwd',false)" class="scifi-btn scifi-btn-active px-2.5 py-1.5">&#9650; FWD</button>
+                <button onmousedown="SpaceshipRoam.setPadHold('turnR',true)" onmouseup="SpaceshipRoam.setPadHold('turnR',false)" onmouseleave="SpaceshipRoam.setPadHold('turnR',false)" class="scifi-btn px-2.5 py-1.5">TURN R &#8631;</button>
+                <button onmousedown="SpaceshipRoam.setPadHold('left',true)" onmouseup="SpaceshipRoam.setPadHold('left',false)" onmouseleave="SpaceshipRoam.setPadHold('left',false)" class="scifi-btn px-2.5 py-1.5">&#9664; LEFT</button>
+                <button onmousedown="SpaceshipRoam.setPadHold('back',true)" onmouseup="SpaceshipRoam.setPadHold('back',false)" onmouseleave="SpaceshipRoam.setPadHold('back',false)" class="scifi-btn px-2.5 py-1.5">&#9660; BACK</button>
+                <button onmousedown="SpaceshipRoam.setPadHold('right',true)" onmouseup="SpaceshipRoam.setPadHold('right',false)" onmouseleave="SpaceshipRoam.setPadHold('right',false)" class="scifi-btn px-2.5 py-1.5">RIGHT &#9654;</button>
+              </div>
+            </div>
+
+            <!-- Bottom Flight / Deck Controls Bar -->
+            <div class="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2 bg-slate-950/88 backdrop-blur-md border border-cyan-500/40 rounded-lg px-3.5 py-2 font-mono text-xs">
+              <div class="text-cyan-200">
+                <strong>EASY ROAM:</strong> Click any glowing Bridge Station (or Star) to glide there automatically, use the On-Screen Nav Pad, or [W/A/S/D + Arrow Keys]!
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-amber-300 mr-1">PROPULSION:</span>
+                <button onclick="SpaceshipRoam.setWarpLevel(1)" id="warp-lvl-1" class="scifi-btn px-2.5 py-1">[1] IMPULSE</button>
+                <button onclick="SpaceshipRoam.setWarpLevel(2)" id="warp-lvl-2" class="scifi-btn scifi-btn-active px-2.5 py-1">[2] WARP 3</button>
+                <button onclick="SpaceshipRoam.setWarpLevel(3)" id="warp-lvl-3" class="scifi-btn px-2.5 py-1">[3] WARP 7</button>
+                <button onclick="SpaceshipRoam.setWarpLevel(4)" id="warp-lvl-4" class="scifi-btn px-2.5 py-1">[4] HYPER-DRIVE</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Ship Stations & Quick-Deck Teleport Panel (3 cols) -->
+          <div class="lg:col-span-3 space-y-3 font-mono flex flex-col justify-between">
+            <div class="scifi-card p-3.5 space-y-2.5">
+              <h3 class="text-xs font-bold uppercase neon-cyan border-b border-cyan-500/20 pb-1.5">
+                // BRIDGE DECK STATIONS (QUICK MOVE)
+              </h3>
+              <p class="text-xs text-slate-400">
+                Walk to any station with WASD or click below to move directly to that deck console:
+              </p>
+              <div class="space-y-1.5">
+                <button onclick="SpaceshipRoam.teleportToStation('helm')" class="w-full text-left p-2 scifi-card hover:border-cyan-400 text-xs">
+                  <div class="font-bold neon-cyan">01 // FORWARD HELM &amp; DOME</div>
+                  <div class="text-slate-400">Panoramic Window &amp; Flight Stick</div>
+                </button>
+                <button onclick="SpaceshipRoam.teleportToStation('holo')" class="w-full text-left p-2 scifi-card hover:border-emerald-400 text-xs">
+                  <div class="font-bold neon-emerald">02 // 3D HOLO-ROTUNDA</div>
+                  <div class="text-slate-400">Central Volumetric System Table</div>
+                </button>
+                <button onclick="SpaceshipRoam.teleportToStation('xeno')" class="w-full text-left p-2 scifi-card hover:border-purple-400 text-xs">
+                  <div class="font-bold text-purple-300">03 // PORT XENOBIOLOGY LAB</div>
+                  <div class="text-slate-400">Biosignature &amp; Habitability Pods</div>
+                </button>
+                <button onclick="SpaceshipRoam.teleportToStation('probe')" class="w-full text-left p-2 scifi-card hover:border-amber-400 text-xs">
+                  <div class="font-bold neon-amber">04 // STARBOARD PROBE BAY</div>
+                  <div class="text-slate-400">Orbital Recon Probe Launchers</div>
+                </button>
+                <button onclick="SpaceshipRoam.teleportToStation('warp')" class="w-full text-left p-2 scifi-card hover:border-rose-400 text-xs">
+                  <div class="font-bold neon-crimson">05 // AFT QUANTUM WARP CORE</div>
+                  <div class="text-slate-400">Antimatter Reactor &amp; Random Jump</div>
+                </button>
+              </div>
+            </div>
+
+            <div class="scifi-card p-3.5 space-y-2">
+              <h3 class="text-xs font-bold uppercase neon-emerald border-b border-cyan-500/20 pb-1.5">
+                // ACTIVE ORBITAL LOCK
+              </h3>
+              <div class="text-xs space-y-1 text-slate-200">
+                <div>TARGET: <strong id="ship-target-name" class="neon-cyan">TRAPPIST-1 e</strong></div>
+                <div>CLASS: <strong id="ship-target-class" class="text-white">Terrestrial World</strong></div>
+                <div>ZONE: <strong id="ship-target-hz" class="neon-emerald">Conservative HZ</strong></div>
+              </div>
+              <button onclick="SpaceshipRoam.triggerActiveStationOrAutopilot()" class="w-full scifi-btn scifi-btn-active py-2 mt-1">
+                INTERACT WITH STATION [F]
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- MODULE 02: 3D TILTED HOLO-ORRERY & KEPLERIAN TRAJECTORY SIMULATOR         -->
+    <!-- ========================================================================= -->
+    <section id="panel-orrery" class="hidden space-y-4">
+      <div class="scifi-panel p-5 space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-cyan-500/20 pb-3">
+          <div>
+            <h2 id="orrery-system-title" class="text-xl font-bold uppercase tracking-wider neon-cyan">
+              // TRAPPIST-1 SYSTEM 3D HOLOGRAPHIC ORRERY
+            </h2>
+            <p class="text-xs font-mono text-slate-300">
+              Interactive 3D Keplerian orbital plane with adjustable inclination tilt, volumetric Kopparapu Habitable Zone torus, Frost Line, and clickable planetary nodes.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-4 font-mono text-xs">
+            <label class="flex items-center gap-2 text-cyan-200">
+              <span>3D PITCH TILT:</span>
+              <input id="orrery-tilt" type="range" min="0.22" max="1.0" step="0.02" value="0.58" class="w-24 accent-cyan-400" />
+            </label>
+            <label class="flex items-center gap-2 text-cyan-200">
+              <span>TIME WARP:</span>
+              <input id="orrery-speed" type="range" min="0" max="5" step="0.2" value="1.5" class="w-24 accent-cyan-400" />
+            </label>
+            <label class="flex items-center gap-2 text-cyan-200">
+              <span>MAGNIFICATION:</span>
+              <input id="orrery-zoom" type="range" min="0.5" max="3.0" step="0.1" value="1.1" class="w-24 accent-cyan-400" />
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div class="lg:col-span-8 relative rounded-xl overflow-hidden border border-cyan-400/40 bg-black">
+            <canvas id="orrery-canvas" width="980" height="540" class="w-full h-[500px] cursor-pointer"></canvas>
+            <div class="absolute inset-0 scanline-overlay"></div>
+          </div>
+          <div class="lg:col-span-4 space-y-3 flex flex-col justify-between font-mono">
+            <div class="scifi-card p-4 space-y-2.5">
+              <h3 class="text-xs font-bold uppercase neon-amber">// STELLAR PRIMARY &amp; HZ BOUNDARIES</h3>
+              <div id="orrery-star-details" class="space-y-1.5 text-xs text-slate-200"></div>
+            </div>
+            <div class="scifi-card p-4 space-y-2 flex-1 overflow-y-auto custom-scroll max-h-[320px]">
+              <h3 class="text-xs font-bold uppercase neon-cyan">// SYSTEM ORBITAL HIERARCHY (CLICK TO LOCK)</h3>
+              <div id="orrery-planet-table" class="space-y-1.5 text-xs"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- MODULE 03: 3D GALACTIC SECTOR RADAR (SOLAR NEIGHBORHOOD STARMAP)          -->
+    <!-- ========================================================================= -->
+    <section id="panel-starmap" class="hidden space-y-4">
+      <div class="scifi-panel p-5 space-y-4">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-cyan-500/20 pb-3">
+          <div>
+            <h2 class="text-xl font-bold uppercase tracking-wider neon-cyan">
+              // 3D GALACTIC SECTOR RADAR — SOL NEIGHBORHOOD CARTOGRAPHY
+            </h2>
+            <p class="text-xs font-mono text-slate-300">
+              3D astrometric projection centered on SOL [0,0,0] showing elevation stalks above/below the Galactic Plane, hyper-lane vector to active target, and relativistic travel time diagnostics.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-4 font-mono text-xs">
+            <label class="flex items-center gap-2 text-cyan-200">
+              <span>AZIMUTH ROTATION:</span>
+              <input id="starmap-yaw" type="range" min="0" max="6.28" step="0.05" value="0.75" class="w-28 accent-cyan-400" />
+            </label>
+            <label class="flex items-center gap-2 text-cyan-200">
+              <span>SECTOR RANGE:</span>
+              <input id="starmap-zoom" type="range" min="0.5" max="3.0" step="0.1" value="1.2" class="w-28 accent-cyan-400" />
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <div class="lg:col-span-9 relative rounded-xl overflow-hidden border border-cyan-400/40 bg-black">
+            <canvas id="starmap-canvas" width="1080" height="540" class="w-full h-[500px] cursor-pointer"></canvas>
+            <div class="absolute inset-0 scanline-overlay"></div>
+          </div>
+          <div class="lg:col-span-3 scifi-card p-4 font-mono space-y-3">
+            <h3 class="text-xs font-bold uppercase neon-emerald border-b border-cyan-500/20 pb-2">
+              // INTERSTELLAR TRANSIT TELEMETRY
+            </h3>
+            <div id="starmap-transit-box" class="space-y-2.5 text-xs text-slate-200"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- MODULE 04: 6-CHANNEL SENSOR SUITE & HIGH-RES AI RECON ART ARCHIVE         -->
+    <!-- ========================================================================= -->
+    <section id="panel-gallery" class="hidden space-y-4">
+      <div class="scifi-panel p-5 space-y-5">
+        <div class="border-b border-cyan-500/20 pb-3 flex flex-col md:flex-row md:items-center justify-between gap-2">
+          <div>
+            <h2 id="gallery-header-title" class="text-xl font-bold uppercase tracking-wider neon-cyan">
+              // 6-CHANNEL SYNCHRONIZED SENSOR SUITE &amp; DEEP-SPACE RECON ART
+            </h2>
+            <p class="text-xs font-mono text-slate-300">
+              Simultaneous multi-spectral procedural renderings for the locked target world, plus high-resolution NASA/JPL-grade artistic plates.
+            </p>
+          </div>
+        </div>
+
+        <!-- High-Resolution AI Concept Art Plates (TRAPPIST-1 e & 55 Cancri e) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="scifi-card p-3 space-y-2">
+            <div class="flex items-center justify-between font-mono text-xs">
+              <span class="font-bold neon-cyan">RECON PLATE ALPHA // TRAPPIST-1 e TERMINATOR SHORELINE &amp; SIBLING CHAIN</span>
+              <button onclick="warpToPlanet('TRAPPIST-1 e')" class="scifi-btn px-2 py-0.5">LOCK TRAPPIST-1 e</button>
+            </div>
+            <img id="concept-img-trappist" src="assets/trappist1e_horizon.jpg" alt="TRAPPIST-1 e Shoreline Concept Art" class="w-full h-[260px] object-cover rounded-lg border border-cyan-500/30" />
+            <p class="text-xs text-slate-300 font-mono">
+              High-resolution concept rendition from the liquid water ocean shoreline of TRAPPIST-1 e looking toward the ruby M8V red dwarf primary and three sibling resonant worlds along the ecliptic.
+            </p>
+          </div>
+
+          <div class="scifi-card p-3 space-y-2">
+            <div class="flex items-center justify-between font-mono text-xs">
+              <span class="font-bold neon-amber">RECON PLATE BETA // 55 CANCRI e TIDALLY LOCKED MAGMA SUPER-EARTH</span>
+              <button onclick="warpToPlanet('55 Cnc e')" class="scifi-btn px-2 py-0.5">LOCK 55 CNC e</button>
+            </div>
+            <img id="concept-img-55cnc" src="assets/55cnc_e_lava_world.jpg" alt="55 Cancri e Lava World Concept Art" class="w-full h-[260px] object-cover rounded-lg border border-amber-500/30" />
+            <p class="text-xs text-slate-300 font-mono">
+              Orbital reconnaissance visualization of ultra-hot super-Earth 55 Cancri e (1,958 K): molten silicate magma oceans on the dayside hemisphere transitioning into silicate-vapor lightning storms on the nightside.
+            </p>
+          </div>
+        </div>
+
+        <!-- 6 Real-Time Procedural Sensor Canvases for ANY Selected World -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 font-mono">
+          <div class="scifi-card p-3 space-y-2">
+            <div class="flex justify-between text-xs"><span class="neon-cyan font-bold">CH-01 // SURFACE HORIZON RECON</span><span>OPTICAL</span></div>
+            <canvas id="gallery-canvas-1" width="480" height="260" class="w-full h-[210px] rounded bg-black border border-cyan-500/20"></canvas>
+            <p id="gallery-desc-1" class="text-xs text-slate-300"></p>
+          </div>
+
+          <div class="scifi-card p-3 space-y-2">
+            <div class="flex justify-between text-xs"><span class="neon-cyan font-bold">CH-02 // MAGNETOSPHERE BOW-SHOCK</span><span>PLASMA FLUX</span></div>
+            <canvas id="gallery-canvas-2" width="480" height="260" class="w-full h-[210px] rounded bg-black border border-cyan-500/20"></canvas>
+            <p id="gallery-desc-2" class="text-xs text-slate-300"></p>
+          </div>
+
+          <div class="scifi-card p-3 space-y-2">
+            <div class="flex justify-between text-xs"><span class="neon-cyan font-bold">CH-03 // GEOPHYSICAL CORE CUTAWAY</span><span>SEISMIC</span></div>
+            <canvas id="gallery-canvas-3" width="480" height="260" class="w-full h-[210px] rounded bg-black border border-cyan-500/20"></canvas>
+            <p id="gallery-desc-3" class="text-xs text-slate-300"></p>
+          </div>
+
+          <div class="scifi-card p-3 space-y-2">
+            <div class="flex justify-between text-xs"><span class="neon-cyan font-bold">CH-04 // PLANETARY SCALE COMPARATOR</span><span>METRIC</span></div>
+            <canvas id="gallery-canvas-4" width="480" height="260" class="w-full h-[210px] rounded bg-black border border-cyan-500/20"></canvas>
+            <p id="gallery-desc-4" class="text-xs text-slate-300"></p>
+          </div>
+
+          <div class="scifi-card p-3 space-y-2">
+            <div class="flex justify-between text-xs"><span class="neon-cyan font-bold">CH-05 // JWST NIRSPEC SPECTROMETER</span><span>0.8–5.2 &mu;m</span></div>
+            <canvas id="gallery-canvas-5" width="480" height="260" class="w-full h-[210px] rounded bg-black border border-cyan-500/20"></canvas>
+            <p id="gallery-desc-5" class="text-xs text-slate-300"></p>
+          </div>
+
+          <div class="scifi-card p-3 space-y-2">
+            <div class="flex justify-between text-xs"><span class="neon-cyan font-bold">CH-06 // INFRARED GCM HEAT MAP</span><span>THERMAL IR</span></div>
+            <canvas id="gallery-canvas-6" width="480" height="260" class="w-full h-[210px] rounded bg-black border border-cyan-500/20"></canvas>
+            <p id="gallery-desc-6" class="text-xs text-slate-300"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- MODULE 05: ARCHIVE TELEMETRY ANALYTICS & ASTROPHYSICAL CODEX              -->
+    <!-- ========================================================================= -->
+    <section id="panel-analytics" class="hidden space-y-4">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="scifi-panel p-4 space-y-3">
+          <h3 class="text-sm font-bold font-mono uppercase neon-cyan">
+            // FULTON RADIUS VALLEY &amp; HABITABILITY MATRIX (R_p vs. T_eq)
+          </h3>
+          <div class="rounded-xl overflow-hidden border border-cyan-500/30 bg-black">
+            <canvas id="chart-scatter-canvas" width="680" height="330" class="w-full h-[300px]"></canvas>
+          </div>
+        </div>
+
+        <div class="scifi-panel p-4 space-y-3">
+          <h3 class="text-sm font-bold font-mono uppercase neon-emerald">
+            // CHRONOLOGICAL DETECTION SURGE (1992–2026)
+          </h3>
+          <div class="rounded-xl overflow-hidden border border-cyan-500/30 bg-black">
+            <canvas id="chart-years-canvas" width="680" height="330" class="w-full h-[300px]"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 font-mono">
+        <div class="scifi-panel p-4 space-y-3">
+          <h3 class="text-sm font-bold uppercase neon-cyan">// DETECTION METHOD DISTRIBUTION (6,451 WORLDS)</h3>
+          <div id="methods-bars-container" class="space-y-2 text-xs"></div>
+        </div>
+
+        <div class="scifi-panel p-4 space-y-3">
+          <h3 class="text-sm font-bold uppercase neon-amber">// TOP OBSERVATORY &amp; TELESCOPE ARRAYS</h3>
+          <div id="facilities-bars-container" class="space-y-2 text-xs"></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Inline Dataset Fallback (Injected automatically by sync_exoplanets.ps1) -->
+  <script>
+    window.EXOPLANET_ATLAS_FALLBACK = /*__INLINE_JSON_PLACEHOLDER__*/ null;
+  </script>
+
+  <!-- ========================================================================= -->
+  <!-- 3D SPHERICAL RAYCASTER, PROCEDURAL TEXTURE SYNTHESIZER & SCI-FI ENGINE    -->
+  <!-- ========================================================================= -->
+  <script>
+    const ATLAS = window.EXOPLANET_ATLAS_DATA || window.EXOPLANET_ATLAS_FALLBACK;
+    let allPlanets = (ATLAS && ATLAS.planets) ? ATLAS.planets : [];
+    let filteredPlanets = [...allPlanets];
+    let selectedPlanet = allPlanets.find(p => p.pl_name === 'TRAPPIST-1 e') || allPlanets[0] || null;
+    let currentMainTab = 'explorer';
+    let currentArtMode = 'orbital';
+    let animPhase = 0;
+    let globeRotation = 0.6;
+    let isDraggingGlobe = false;
+    let dragStartX = 0;
+    let warpJumpTimer = 0;
+
+    // Offscreen Procedural Planet Equirectangular Texture & Raycast Buffer
+    const TEX_W = 360;
+    const TEX_H = 180;
+    let planetTexBuffer = new Uint8ClampedArray(TEX_W * TEX_H * 4);
+    let planetCloudBuffer = new Uint8ClampedArray(TEX_W * TEX_H);
+    let planetSpecBuffer = new Uint8ClampedArray(TEX_W * TEX_H);
+    let planetEmitBuffer = new Uint8ClampedArray(TEX_W * TEX_H);
+    let cachedPlanetName = '';
+
+    const offGlobeCanvas = document.createElement('canvas');
+    offGlobeCanvas.width = 280;
+    offGlobeCanvas.height = 280;
+    const offGlobeCtx = offGlobeCanvas.getContext('2d');
+
+    function hashStr(str) {
+      let h = 2166136261 >>> 0;
+      const s = String(str || 'exoplanet');
+      for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    }
+
+    function seededRandom(seed) {
+      let s = seed >>> 0;
+      return function() {
+        s = (Math.imul(1664525, s) + 1013904223) >>> 0;
+        return s / 4294967296;
+      };
+    }
+
+    // Fast 2D Value Noise + Fractional Brownian Motion (fBm) for Planetary Terrain & Clouds
+    function createNoise2D(seed) {
+      const perm = new Uint8Array(512);
+      const rng = seededRandom(seed);
+      for (let i = 0; i < 256; i++) perm[i] = i;
+      for (let i = 255; i > 0; i--) {
+        const j = Math.floor(rng() * (i + 1));
+        const tmp = perm[i]; perm[i] = perm[j]; perm[j] = tmp;
+      }
+      for (let i = 0; i < 256; i++) perm[i + 256] = perm[i];
+
+      function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+      function lerp(a, b, t) { return a + t * (b - a); }
+      function grad(hash, x, y) {
+        const h = hash & 7;
+        const u = h < 4 ? x : y;
+        const v = h < 4 ? y : x;
+        return ((h & 1) ? -u : u) + ((h & 2) ? -2.0 * v : 2.0 * v);
+      }
+
+      return function noise(x, y) {
+        const X = Math.floor(x) & 255;
+        const Y = Math.floor(y) & 255;
+        x -= Math.floor(x);
+        y -= Math.floor(y);
+        const u = fade(x), v = fade(y);
+        const A = perm[X] + Y, B = perm[X + 1] + Y;
+        return lerp(
+          lerp(grad(perm[A], x, y), grad(perm[B], x - 1, y), u),
+          lerp(grad(perm[A + 1], x, y - 1), grad(perm[B + 1], x - 1, y - 1), u),
+          v
+        ) * 0.5 + 0.5;
+      };
+    }
+
+    function fbm(noiseFn, x, y, octaves) {
+      let val = 0, amp = 0.5, freq = 1.0, maxAmp = 0;
+      for (let i = 0; i < octaves; i++) {
+        val += noiseFn(x * freq, y * freq) * amp;
+        maxAmp += amp;
+        freq *= 2.05;
+        amp *= 0.5;
+      }
+      return val / maxAmp;
+    }
+
+    function getStarColors(teff, spectype) {
+      const spec = String(spectype || '').toUpperCase();
+      if (spec.includes('PSR') || spec.includes('PULSAR')) {
+        return { core: '#e0f2fe', corona: '#00f0ff', outer: '#0284c7', label: 'Millisecond Pulsar' };
+      }
+      const t = Number(teff) || 5200;
+      if (t < 3200) return { core: '#fff1f2', corona: '#fb7185', outer: '#be123c', label: 'Ultra-Cool M-Dwarf' };
+      if (t < 3900) return { core: '#fff7ed', corona: '#f97316', outer: '#c2410c', label: 'Red Dwarf (M-Type)' };
+      if (t < 5200) return { core: '#fefce8', corona: '#facc15', outer: '#ea580c', label: 'Orange Dwarf (K-Type)' };
+      if (t < 6000) return { core: '#ffffff', corona: '#fde047', outer: '#ca8a04', label: 'Yellow G-Type Star' };
+      return { core: '#f0f9ff', corona: '#38bdf8', outer: '#1d4ed8', label: 'Hot F/A-Type Star' };
+    }
+
+    function getPlanetPalette(p) {
+      const eqt = Number(p.pl_eqt) || 255;
+      const rade = Number(p.pl_rade) || 1.0;
+      const cls = String(p.planet_class || '');
+      if (cls.includes('Lava') || eqt >= 1050) {
+        return { type: 'lava', atmoRGB: [255, 110, 30], hasRings: false };
+      }
+      if (cls.includes('Gas Giant') || cls.includes('Hot Jupiter') || rade > 6.0) {
+        return {
+          type: eqt > 800 ? 'hot_jupiter' : 'jovian',
+          atmoRGB: eqt > 800 ? [255, 80, 120] : [245, 190, 100],
+          hasRings: (hashStr(p.pl_name) % 3 === 0) || p.pl_name.includes('16')
+        };
+      }
+      if (cls.includes('Ice Giant') || cls.includes('Mini-Neptune')) {
+        return { type: 'neptunian', atmoRGB: [56, 200, 255], hasRings: (hashStr(p.pl_name) % 4 === 0) };
+      }
+      if (cls.includes('Hycean')) {
+        return { type: 'hycean', atmoRGB: [0, 240, 255], hasRings: false };
+      }
+      if (eqt < 190) {
+        return { type: 'cryo', atmoRGB: [148, 190, 255], hasRings: false };
+      }
+      if (eqt >= 190 && eqt <= 315) {
+        return { type: 'habitable', atmoRGB: [40, 195, 255], hasRings: false };
+      }
+      return { type: 'rocky_warm', atmoRGB: [255, 150, 75], hasRings: false };
+    }
+
+    // Build high-detail procedural equirectangular planet maps when target changes
+    function synthesizePlanetTexture(p) {
+      if (!p || cachedPlanetName === p.pl_name) return;
+      cachedPlanetName = p.pl_name;
+
+      const seed = hashStr(p.pl_name);
+      const nTerrain = createNoise2D(seed);
+      const nDetail  = createNoise2D(seed + 101);
+      const nCloud   = createNoise2D(seed + 202);
+      const pal = getPlanetPalette(p);
+
+      for (let y = 0; y < TEX_H; y++) {
+        const v = y / TEX_H;
+        const lat = (v - 0.5) * Math.PI;
+        const absLat = Math.abs(v - 0.5) * 2.0;
+
+        for (let x = 0; x < TEX_W; x++) {
+          const u = x / TEX_W;
+          const idx = (y * TEX_W + x);
+          const pIdx = idx * 4;
+
+          // Seamless cylindrical wrapping in X using cos/sin offset
+          const nx = Math.cos(u * Math.PI * 2) * 1.6 + 2.0;
+          const ny = Math.sin(u * Math.PI * 2) * 1.6 + 2.0;
+          const nz = v * 3.2;
+
+          const warp = nDetail(nx * 2.1, nz * 2.1) * 0.35;
+          const hVal = fbm(nTerrain, nx + warp, ny + nz, 4);
+          const cVal = fbm(nCloud, nx * 1.8 + warp, nz * 2.4, 3);
+
+          let r = 20, g = 40, b = 80, spec = 0, emit = 0;
+
+          if (pal.type === 'lava') {
+            // Molten silicate rivers + dark basaltic crust plates
+            const fissure = Math.abs(hVal - 0.52);
+            if (fissure < 0.055) {
+              const heat = 1.0 - (fissure / 0.055);
+              r = 255;
+              g = Math.min(255, Math.floor(110 + heat * 145));
+              b = Math.floor(heat * 95);
+              emit = Math.floor(180 + heat * 75);
+            } else {
+              r = Math.floor(24 + hVal * 32);
+              g = Math.floor(14 + hVal * 18);
+              b = Math.floor(16 + hVal * 20);
+            }
+          } else if (pal.type === 'jovian' || pal.type === 'hot_jupiter' || pal.type === 'neptunian') {
+            // Turbulent zonal jet streams & anticyclones
+            const band = Math.sin(v * 22.0 + warp * 4.5 + (hVal - 0.5) * 2.5);
+            if (pal.type === 'neptunian') {
+              r = Math.floor(12 + (band * 0.5 + 0.5) * 35);
+              g = Math.floor(95 + (band * 0.5 + 0.5) * 110);
+              b = Math.floor(175 + (band * 0.5 + 0.5) * 75);
+            } else if (pal.type === 'hot_jupiter') {
+              r = Math.floor(90 + (band * 0.5 + 0.5) * 155);
+              g = Math.floor(30 + (band * 0.5 + 0.5) * 75);
+              b = Math.floor(45 + (band * 0.5 + 0.5) * 55);
+              if (band > 0.65) emit = Math.floor((band - 0.65) * 380);
+            } else {
+              r = Math.floor(145 + (band * 0.5 + 0.5) * 95);
+              g = Math.floor(95 + (band * 0.5 + 0.5) * 85);
+              b = Math.floor(55 + (band * 0.5 + 0.5) * 65);
+            }
+          } else if (pal.type === 'habitable' || pal.type === 'hycean') {
+            const seaLevel = pal.type === 'hycean' ? 0.66 : 0.51;
+            if (absLat > 0.80 - hVal * 0.12) {
+              // Polar ice cap
+              r = 235; g = 246; b = 255; spec = 90;
+            } else if (hVal < seaLevel) {
+              // Deep & shallow marine basins
+              const depth = hVal / seaLevel;
+              r = Math.floor(6 + depth * 22);
+              g = Math.floor(48 + depth * 95);
+              b = Math.floor(105 + depth * 115);
+              spec = 220;
+            } else {
+              // Continental biomes (vegetation / highlands / mountains)
+              const elev = (hVal - seaLevel) / (1.0 - seaLevel);
+              if (elev < 0.38) {
+                r = Math.floor(28 + elev * 85);
+                g = Math.floor(105 + elev * 65);
+                b = Math.floor(48 + elev * 30);
+              } else if (elev < 0.72) {
+                r = Math.floor(125 + elev * 65);
+                g = Math.floor(110 + elev * 45);
+                b = Math.floor(68 + elev * 35);
+              } else {
+                r = 220; g = 225; b = 232;
+              }
+            }
+          } else if (pal.type === 'cryo') {
+            // Nitrogen-methane glaciers & dark tholin basins
+            const ice = hVal * 0.7 + absLat * 0.3;
+            r = Math.floor(85 + ice * 145);
+            g = Math.floor(115 + ice * 130);
+            b = Math.floor(145 + ice * 105);
+            spec = 130;
+          } else {
+            // Warm arid super-Earth / rocky world
+            r = Math.floor(95 + hVal * 135);
+            g = Math.floor(48 + hVal * 75);
+            b = Math.floor(28 + hVal * 45);
+          }
+
+          planetTexBuffer[pIdx]     = r;
+          planetTexBuffer[pIdx + 1] = g;
+          planetTexBuffer[pIdx + 2] = b;
+          planetTexBuffer[pIdx + 3] = 255;
+          planetSpecBuffer[idx]     = spec;
+          planetEmitBuffer[idx]     = emit;
+          planetCloudBuffer[idx]    = cVal > 0.54 ? Math.min(255, Math.floor((cVal - 0.54) * 520)) : 0;
+        }
+      }
+    }
+
+    // Real-Time 3D Spherical Raycaster into Offscreen Canvas
+    function renderRaycastPlanetGlobe(ctx, cx, cy, radius, p, rotAngle, showAtmo, forceRings) {
+      synthesizePlanetTexture(p);
+      const pal = getPlanetPalette(p);
+      const hasRings = forceRings || pal.hasRings || (Number(p.pl_rade) >= 4.2);
+
+      // 1. Back half of volumetric planetary rings (behind planet)
+      if (hasRings) {
+        drawPlanetaryRings(ctx, cx, cy, radius, pal.atmoRGB, true);
+      }
+
+      // 2. Outer Atmospheric Rayleigh Corona Glow
+      if (showAtmo) {
+        const [ar, ag, ab] = pal.atmoRGB;
+        const glow = ctx.createRadialGradient(cx - radius * 0.18, cy - radius * 0.12, radius * 0.88, cx, cy, radius * 1.32);
+        glow.addColorStop(0, `rgba(${ar},${ag},${ab},0.55)`);
+        glow.addColorStop(0.55, `rgba(${ar},${ag},${ab},0.22)`);
+        glow.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius * 1.32, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // 3. Per-Pixel 3D Sphere Raycast
+      const dim = Math.min(260, Math.max(64, Math.round(radius * 2)));
+      if (offGlobeCanvas.width !== dim) {
+        offGlobeCanvas.width = dim;
+        offGlobeCanvas.height = dim;
+      }
+      const imgData = offGlobeCtx.createImageData(dim, dim);
+      const data = imgData.data;
+      const half = dim / 2;
+      const invHalf = 1.0 / half;
+
+      // Light direction vector (from parent star at top-left-front)
+      const lx = -0.68, ly = -0.22, lz = 0.70;
+      const [ar, ag, ab] = pal.atmoRGB;
+
+      for (let py = 0; py < dim; py++) {
+        const ny = (py - half) * invHalf;
+        const ny2 = ny * ny;
+        for (let px = 0; px < dim; px++) {
+          const nx = (px - half) * invHalf;
+          const r2 = nx * nx + ny2;
+          if (r2 > 1.0) continue;
+
+          const nz = Math.sqrt(1.0 - r2);
+          const outIdx = (py * dim + px) * 4;
+
+          // Spherical coordinates (longitude, latitude)
+          const lon = Math.atan2(nx, nz) + rotAngle;
+          const lat = Math.asin(Math.max(-1, Math.min(1, ny)));
+
+          let u = ((lon / (Math.PI * 2)) % 1.0);
+          if (u < 0) u += 1.0;
+          const v = (lat / Math.PI) + 0.5;
+
+          const tx = Math.min(TEX_W - 1, Math.floor(u * TEX_W));
+          const ty = Math.min(TEX_H - 1, Math.floor(v * TEX_H));
+          const tIdx = ty * TEX_W + tx;
+          const tpIdx = tIdx * 4;
+
+          let r = planetTexBuffer[tpIdx];
+          let g = planetTexBuffer[tpIdx + 1];
+          let b = planetTexBuffer[tpIdx + 2];
+
+          // Cloud layer (rotates 1.35x faster than lithosphere)
+          if (showAtmo) {
+            let uc = (((lon + rotAngle * 0.35) / (Math.PI * 2)) % 1.0);
+            if (uc < 0) uc += 1.0;
+            const tcx = Math.min(TEX_W - 1, Math.floor(uc * TEX_W));
+            const cloudAlpha = planetCloudBuffer[ty * TEX_W + tcx] / 255.0;
+            if (cloudAlpha > 0) {
+              r = r * (1 - cloudAlpha) + 245 * cloudAlpha;
+              g = g * (1 - cloudAlpha) + 250 * cloudAlpha;
+              b = b * (1 - cloudAlpha) + 255 * cloudAlpha;
+            }
+          }
+
+          // Lambertian diffuse illumination + Normal-Map 3D Terrain Bump Relief along Terminator
+          const txNext = (tx + 1) % TEX_W;
+          const bumpSlope = ((planetTexBuffer[ty * TEX_W * 4 + txNext * 4] - r) + (planetTexBuffer[ty * TEX_W * 4 + txNext * 4 + 1] - g)) * 0.0022;
+          const ndotl = (nx + bumpSlope) * lx + ny * ly + nz * lz;
+          const diff = Math.max(0.04, Math.min(1.08, (ndotl + 0.12) * 0.98));
+
+          // Specular ocean glint (Blinn-Phong)
+          let specLight = 0;
+          if (ndotl > 0 && planetSpecBuffer[tIdx] > 0) {
+            const hx = lx, hy = ly, hz = lz + 1.0;
+            const hLen = Math.hypot(hx, hy, hz);
+            const ndoth = Math.max(0, (nx * hx + ny * hy + nz * hz) / hLen);
+            specLight = Math.pow(ndoth, 28) * (planetSpecBuffer[tIdx] / 255.0) * 190;
+          }
+
+          // Fresnel atmospheric rim scattering at sphere edge (1 - nz)
+          const fresnel = showAtmo ? Math.pow(1.0 - nz, 2.8) * Math.max(0.15, ndotl + 0.35) : 0;
+
+          // Nightside thermal magma emission
+          const emit = planetEmitBuffer[tIdx] * Math.max(0.25, 1.0 - diff * 0.7);
+
+          data[outIdx]     = Math.min(255, r * diff + specLight + fresnel * ar + emit);
+          data[outIdx + 1] = Math.min(255, g * diff + specLight * 0.92 + fresnel * ag + emit * 0.45);
+          data[outIdx + 2] = Math.min(255, b * diff + specLight * 0.75 + fresnel * ab + emit * 0.1);
+          data[outIdx + 3] = 255;
+        }
+      }
+
+      offGlobeCtx.putImageData(imgData, 0, 0);
+      ctx.drawImage(offGlobeCanvas, cx - radius, cy - radius, radius * 2, radius * 2);
+
+      // 4. Front half of volumetric planetary rings (in front of planet)
+      if (hasRings) {
+        drawPlanetaryRings(ctx, cx, cy, radius, pal.atmoRGB, false);
+      }
+    }
+
+    function drawPlanetaryRings(ctx, cx, cy, radius, atmoRGB, isBackHalf) {
+      const [ar, ag, ab] = atmoRGB;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-0.26);
+      const startAngle = isBackHalf ? Math.PI : 0;
+      const endAngle   = isBackHalf ? Math.PI * 2 : Math.PI;
+
+      const bands = [
+        { rx: 1.45, ry: 0.34, lw: radius * 0.06, alpha: 0.48 },
+        { rx: 1.68, ry: 0.39, lw: radius * 0.11, alpha: 0.65 },
+        { rx: 1.92, ry: 0.45, lw: radius * 0.05, alpha: 0.35 },
+        { rx: 2.10, ry: 0.49, lw: radius * 0.03, alpha: 0.22 }
+      ];
+
+      bands.forEach(b => {
+        ctx.strokeStyle = `rgba(${Math.min(255, ar + 70)}, ${Math.min(255, ag + 70)}, ${Math.min(255, ab + 70)}, ${b.alpha})`;
+        ctx.lineWidth = Math.max(2, b.lw);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, radius * b.rx, radius * b.ry, 0, startAngle, endAngle);
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    function drawSciFiStarfield(ctx, w, h, seed) {
+      const rng = seededRandom(seed);
+      const bg = ctx.createLinearGradient(0, 0, w, h);
+      bg.addColorStop(0, '#01040d');
+      bg.addColorStop(0.5, '#040b1a');
+      bg.addColorStop(1, '#020510');
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      // Deep space volumetric nebula clouds
+      for (let i = 0; i < 4; i++) {
+        const nx = rng() * w, ny = rng() * h, nr = 160 + rng() * 260;
+        const neb = ctx.createRadialGradient(nx, ny, 10, nx, ny, nr);
+        const cols = ['rgba(0, 240, 255, 0.06)', 'rgba(139, 92, 246, 0.06)', 'rgba(0, 255, 157, 0.04)', 'rgba(244, 63, 94, 0.05)'];
+        neb.addColorStop(0, cols[i % 4]);
+        neb.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = neb;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // Stars (or Warp Streak Jump Effect!)
+      for (let i = 0; i < 180; i++) {
+        const sx = rng() * w;
+        const sy = rng() * h;
+        const alpha = 0.25 + rng() * 0.75;
+        if (warpJumpTimer > 0) {
+          const dx = sx - w * 0.5;
+          const dy = sy - h * 0.5;
+          const factor = 1.0 + warpJumpTimer * 0.28;
+          ctx.strokeStyle = `rgba(0, 240, 255, ${alpha.toFixed(2)})`;
+          ctx.lineWidth = 1.6;
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(w * 0.5 + dx * factor, h * 0.5 + dy * factor);
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = i % 9 === 0 ? `rgba(125, 211, 252, ${alpha})` : `rgba(255, 255, 255, ${alpha})`;
+          ctx.beginPath();
+          ctx.arc(sx, sy, rng() < 0.85 ? 0.9 : 1.7, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    // JWST-Style Star Renderer with Coronal Prominences & Optical Diffraction Spikes
+    function drawStarWithDiffractionSpikes(ctx, sx, sy, sr, starInfo, phase) {
+      // Outer coronal plasma glow
+      const corona = ctx.createRadialGradient(sx, sy, sr * 0.2, sx, sy, sr * 4.2);
+      corona.addColorStop(0, starInfo.core);
+      corona.addColorStop(0.22, starInfo.corona);
+      corona.addColorStop(0.55, starInfo.outer);
+      corona.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = corona;
+      ctx.beginPath();
+      ctx.arc(sx, sy, sr * 4.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 6-Point JWST Optical Diffraction Spikes
+      ctx.save();
+      ctx.translate(sx, sy);
+      for (let a = 0; a < 3; a++) {
+        ctx.save();
+        ctx.rotate((a * Math.PI) / 3 + 0.15);
+        const spike = ctx.createLinearGradient(-sr * 5.2, 0, sr * 5.2, 0);
+        spike.addColorStop(0, 'rgba(0,0,0,0)');
+        spike.addColorStop(0.5, starInfo.core);
+        spike.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.strokeStyle = spike;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(-sr * 5.2, 0);
+        ctx.lineTo(sr * 5.2, 0);
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.restore();
+    }
+
+    function drawSciFiTargetReticle(ctx, cx, cy, r, p) {
+      ctx.save();
+      ctx.translate(cx, cy);
+
+      // Rotating outer dashed cyan sensor ring
+      ctx.rotate(animPhase * 0.35);
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.42)';
+      ctx.lineWidth = 1.3;
+      ctx.setLineDash([12, 8, 4, 8]);
+      ctx.beginPath();
+      ctx.arc(0, 0, r + 24, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Counter-rotating inner telemetry ticks
+      ctx.rotate(-animPhase * 0.7);
+      ctx.strokeStyle = 'rgba(0, 255, 157, 0.35)';
+      ctx.setLineDash([4, 18]);
+      ctx.beginPath();
+      ctx.arc(0, 0, r + 14, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      // Corner targeting brackets & callout line
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.75)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - r * 0.7, cy - r * 0.7);
+      ctx.lineTo(cx - r * 1.15, cy - r * 1.05);
+      ctx.lineTo(cx - r * 1.65, cy - r * 1.05);
+      ctx.stroke();
+
+      ctx.fillStyle = '#00f0ff';
+      ctx.font = 'bold 12px monospace';
+      ctx.fillText(`TARGET // ${p.pl_name.toUpperCase()}`, cx - r * 1.65, cy - r * 1.05 - 8);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px monospace';
+      ctx.fillText(`R: ${Number(p.pl_rade).toFixed(2)} Re | Teq: ${Math.round(p.pl_eqt)} K`, cx - r * 1.65, cy - r * 1.05 + 15);
+    }
+
+    function drawMainArtisticCanvas(p) {
+      const canvas = document.getElementById('artistic-main-canvas');
+      if (!canvas || !p) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height;
+      const showAtmo = document.getElementById('toggle-atmo-glow').checked;
+      const showHud = document.getElementById('toggle-hud-labels').checked;
+      const forceRings = document.getElementById('toggle-rings').checked;
+
+      if (currentArtMode === 'orbital') {
+        drawSciFiStarfield(ctx, w, h, hashStr(p.pl_name));
+
+        const starInfo = getStarColors(p.st_teff, p.st_spectype);
+        const sx = 165, sy = 150;
+        const sr = Math.min(58, Math.max(24, (Number(p.st_rad) || 0.5) * 42));
+        drawStarWithDiffractionSpikes(ctx, sx, sy, sr, starInfo, animPhase);
+
+        if (Number(p.sy_snum) >= 2) {
+          const bx = sx + Math.cos(animPhase * 0.6) * 78;
+          const by = sy + Math.sin(animPhase * 0.6) * 36;
+          drawStarWithDiffractionSpikes(ctx, bx, by, sr * 0.48, { core: '#fff1f2', corona: '#fb7185', outer: '#be123c' }, animPhase);
+        }
+
+        // Background sibling planets along ecliptic plane
+        const siblings = allPlanets.filter(x => x.hostname === p.hostname && x.pl_name !== p.pl_name);
+        siblings.slice(0, 5).forEach((sib, idx) => {
+          const bx = 310 + idx * 75;
+          const by = 105 + (idx % 2) * 44;
+          const br = 9 + Math.min(12, (Number(sib.pl_rade) || 1) * 3.5);
+          ctx.strokeStyle = 'rgba(0, 240, 255, 0.16)';
+          ctx.beginPath(); ctx.arc(bx, by, br + 5, 0, Math.PI * 2); ctx.stroke();
+          ctx.fillStyle = '#0ea5e9';
+          ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
+          if (showHud) {
+            ctx.fillStyle = 'rgba(186, 230, 253, 0.85)';
+            ctx.font = '12px monospace';
+            ctx.fillText(sib.pl_name, bx - 26, by + br + 16);
+          }
+        });
+
+        // Main 3D Raycast Planet Globe
+        const px = 710, py = 238, pr = 132;
+        renderRaycastPlanetGlobe(ctx, px, py, pr, p, globeRotation + animPhase * 0.45, showAtmo, forceRings);
+
+        if (showHud) {
+          drawSciFiTargetReticle(ctx, px, py, pr, p);
+          ctx.fillStyle = '#00f0ff';
+          ctx.font = 'bold 12px monospace';
+          ctx.fillText(`PRIMARY STAR // ${p.hostname.toUpperCase()} [${p.st_spectype || 'MAIN SEQ'} | ${p.st_teff || 5200} K]`, 24, 32);
+        }
+      } else if (currentArtMode === 'surface') {
+        drawSurfacePanorama(ctx, w, h, p, showAtmo, showHud);
+      } else if (currentArtMode === 'magneto') {
+        drawMagnetosphereSimulation(ctx, w, h, p, showHud);
+      } else if (currentArtMode === 'interior') {
+        drawInteriorCutaway(ctx, w, h, p, showHud);
+      } else if (currentArtMode === 'scale') {
+        drawScaleComparison(ctx, w, h, p);
+      }
+    }
+
+    // Animated Magnetosphere & Stellar Wind Bow-Shock Simulation
+    function drawMagnetosphereSimulation(ctx, w, h, p, showHud) {
+      drawSciFiStarfield(ctx, w, h, hashStr(p.pl_name + '_mag'));
+      const cx = w * 0.56, cy = h * 0.5;
+      const pr = 72;
+
+      // Bow-Shock Parabolic Envelope
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 183, 3, 0.65)';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      ctx.moveTo(cx + 260, cy - 210);
+      ctx.quadraticCurveTo(cx - 260, cy, cx + 260, cy + 210);
+      ctx.stroke();
+      ctx.restore();
+
+      // Dipolar Magnetic Field Loops (North to South Pole)
+      for (let i = 1; i <= 4; i++) {
+        const rx = pr * (1.2 + i * 0.55);
+        const ry = pr * (0.9 + i * 0.42);
+        ctx.strokeStyle = `rgba(0, 240, 255, ${(0.65 - i * 0.12).toFixed(2)})`;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.ellipse(cx - rx * 0.35, cy, rx * 0.75, ry, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.ellipse(cx + rx * 0.65, cy, rx * 1.15, ry * 0.9, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      // Animated Stellar Wind Plasma Particles streaming from left and deflecting
+      for (let i = 0; i < 42; i++) {
+        const progress = ((animPhase * 0.9 + i * 0.17) % 1.0);
+        let wx = progress * w;
+        let wy = ((i / 42) - 0.5) * (h * 0.85) + cy;
+        const distToBow = wx - (cx - 135);
+        if (distToBow > 0) {
+          const sign = wy < cy ? -1 : 1;
+          wy += sign * Math.min(140, distToBow * 0.42);
+        }
+        ctx.fillStyle = '#fde047';
+        ctx.fillRect(wx, wy, 14, 2);
+      }
+
+      renderRaycastPlanetGlobe(ctx, cx, cy, pr, p, globeRotation + animPhase * 0.4, true, false);
+
+      if (showHud) {
+        ctx.fillStyle = '#00f0ff';
+        ctx.font = 'bold 13px monospace';
+        ctx.fillText(`MAGNETOSPHERIC BOW-SHOCK & CORONAL MASS INTERACTION // ${p.pl_name.toUpperCase()}`, 24, 34);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '12px monospace';
+        ctx.fillText(`Yellow Dashed Arc = Supersonic Stellar Wind Bow-Shock | Cyan Loops = Dipolar Planetary Magnetosphere`, 24, 54);
+      }
+    }
+
+    function drawSurfacePanorama(ctx, w, h, p, showAtmo, showHud) {
+      const starInfo = getStarColors(p.st_teff, p.st_spectype);
+      const pal = getPlanetPalette(p);
+      const [ar, ag, ab] = pal.atmoRGB;
+
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.62);
+      skyGrad.addColorStop(0, '#020617');
+      skyGrad.addColorStop(0.55, `rgb(${Math.floor(ar * 0.25)}, ${Math.floor(ag * 0.25)}, ${Math.floor(ab * 0.35)})`);
+      skyGrad.addColorStop(1, starInfo.outer);
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Auroral curtains waving in upper atmosphere
+      for (let x = 60; x < w - 60; x += 14) {
+        const ay = 45 + Math.sin(x * 0.015 + animPhase * 2) * 22;
+        const aglow = ctx.createLinearGradient(x, ay, x, ay + 85);
+        aglow.addColorStop(0, 'rgba(0,0,0,0)');
+        aglow.addColorStop(0.5, 'rgba(0, 255, 157, 0.22)');
+        aglow.addColorStop(1, 'rgba(0, 240, 255, 0)');
+        ctx.fillStyle = aglow;
+        ctx.fillRect(x, ay, 10, 85);
+      }
+
+      // Host Star rising over horizon
+      const starScale = Math.min(110, Math.max(24, ((Number(p.st_rad) || 0.5) / Math.max(Number(p.pl_orbsmax) || 0.1, 0.015)) * 18));
+      const sx = w * 0.52, sy = h * 0.54;
+      drawStarWithDiffractionSpikes(ctx, sx, sy, starScale, starInfo, animPhase);
+
+      // Ecliptic sibling crescents
+      const siblings = allPlanets.filter(x => x.hostname === p.hostname && x.pl_name !== p.pl_name);
+      siblings.slice(0, 5).forEach((sib, idx) => {
+        const bx = w * 0.16 + idx * 155;
+        const by = h * 0.22 + (idx % 2) * 32;
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath(); ctx.arc(bx, by, 12 + (idx % 3) * 4, 0, Math.PI * 2); ctx.fill();
+        if (showHud) {
+          ctx.fillStyle = '#bae6fd';
+          ctx.font = '12px monospace';
+          ctx.fillText(sib.pl_name, bx - 24, by + 26);
+        }
+      });
+
+      // Foreground Ocean / Lava Sea with animated waves
+      const horizonY = h * 0.62;
+      const seaGrad = ctx.createLinearGradient(0, horizonY, 0, h);
+      if (pal.type === 'lava') {
+        seaGrad.addColorStop(0, '#fde047');
+        seaGrad.addColorStop(0.35, '#ea580c');
+        seaGrad.addColorStop(1, '#3b0707');
+      } else {
+        seaGrad.addColorStop(0, `rgb(${ar}, ${ag}, ${ab})`);
+        seaGrad.addColorStop(0.4, '#0369a1');
+        seaGrad.addColorStop(1, '#020617');
+      }
+      ctx.fillStyle = seaGrad;
+      ctx.fillRect(0, horizonY, w, h - horizonY);
+
+      for (let y = horizonY + 4; y < h; y += 5) {
+        const prog = (y - horizonY) / (h - horizonY);
+        const rw = (40 + prog * 260) + Math.sin(y * 0.25 - animPhase * 4) * 22;
+        ctx.fillStyle = starInfo.corona;
+        ctx.globalAlpha = 0.4 * (1 - prog * 0.5);
+        ctx.fillRect(sx - rw / 2, y, rw, 2.5);
+      }
+      ctx.globalAlpha = 1.0;
+
+      // Craggy basaltic shoreline silhouette
+      const rng = seededRandom(hashStr(p.pl_name + '_ridge'));
+      ctx.fillStyle = '#030712';
+      ctx.beginPath();
+      ctx.moveTo(0, horizonY + 12);
+      for (let x = 0; x <= w; x += 28) {
+        const valley = Math.min(1, Math.abs(x - sx) / 240);
+        ctx.lineTo(x, horizonY - (18 + rng() * 72) * valley);
+      }
+      ctx.lineTo(w, horizonY + 24);
+      ctx.lineTo(0, horizonY + 24);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function drawInteriorCutaway(ctx, w, h, p, showHud) {
+      drawSciFiStarfield(ctx, w, h, hashStr(p.pl_name + '_int'));
+      const cx = w * 0.34, cy = h * 0.5, r = 142;
+      const rade = Number(p.pl_rade) || 1.0;
+
+      let layers = rade <= 1.75 ? [
+        { name: 'EXOSPHERE & ATMOSPHERIC LIMB', frac: 1.00, color: '#00f0ff' },
+        { name: 'SILICATE CRUST & LITHOSPHERE', frac: 0.92, color: '#b45309' },
+        { name: 'CONVECTIVE PEROVSKITE MANTLE', frac: 0.82, color: '#ea580c' },
+        { name: 'LIQUID FE-NI DYNAMO OUTER CORE', frac: 0.48, color: '#facc15' },
+        { name: 'SOLID INNER METALLIC CORE', frac: 0.24, color: '#fef9c3' }
+      ] : [
+        { name: 'UPPER CLOUD DECKS & HAZE', frac: 1.00, color: '#38bdf8' },
+        { name: 'MOLECULAR H2-HE ENVELOPE', frac: 0.84, color: '#0284c7' },
+        { name: 'SUPERCRITICAL IONIC / METALLIC LAYER', frac: 0.56, color: '#f59e0b' },
+        { name: 'HIGH-PRESSURE ROCK-ICE CORE', frac: 0.24, color: '#fef08a' }
+      ];
+
+      renderRaycastPlanetGlobe(ctx, cx, cy, r, p, globeRotation, true, false);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(cx, cy - r * 1.2, r * 1.3, r * 2.4);
+      ctx.clip();
+      layers.forEach(L => {
+        ctx.fillStyle = L.color;
+        ctx.beginPath(); ctx.arc(cx, cy, r * L.frac, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#020617'; ctx.lineWidth = 2; ctx.stroke();
+      });
+      ctx.restore();
+
+      const lx = w * 0.58;
+      let ly = 80;
+      ctx.fillStyle = '#00f0ff';
+      ctx.font = 'bold 14px monospace';
+      ctx.fillText(`// SEISMIC INTERIOR MODEL: ${p.pl_name.toUpperCase()}`, lx, ly);
+      ly += 36;
+      layers.forEach(L => {
+        ctx.fillStyle = L.color;
+        ctx.fillRect(lx, ly - 11, 16, 16);
+        ctx.fillStyle = '#e2f1ff';
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText(`${L.name} (${Math.round(L.frac * 100)}% Rp)`, lx + 26, ly + 2);
+        ly += 36;
+      });
+    }
+
+    function drawScaleComparison(ctx, w, h, p) {
+      drawSciFiStarfield(ctx, w, h, hashStr(p.pl_name + '_scale'));
+      const rade = Number(p.pl_rade) || 1.0;
+      const bodies = [
+        { name: 'EARTH (SOL-3)', rade: 1.0, col: '#0284c7' },
+        { name: p.pl_name.toUpperCase(), rade: rade, isTarget: true },
+        { name: 'NEPTUNE (SOL-8)', rade: 3.88, col: '#38bdf8' }
+      ];
+      if (rade > 4.2) bodies.push({ name: 'JUPITER (SOL-5)', rade: 11.21, col: '#d97706' });
+
+      const maxR = Math.max(...bodies.map(b => b.rade));
+      const scalePx = Math.min(120, 140 / maxR);
+      const step = w / (bodies.length + 1);
+
+      bodies.forEach((b, i) => {
+        const bx = step * (i + 1), by = h * 0.5, br = Math.max(6, b.rade * scalePx);
+        if (b.isTarget) {
+          renderRaycastPlanetGlobe(ctx, bx, by, br, p, globeRotation + animPhase * 0.3, true, false);
+        } else {
+          ctx.fillStyle = b.col;
+          ctx.beginPath(); ctx.arc(bx, by, br, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.fillStyle = b.isTarget ? '#00f0ff' : '#e2f1ff';
+        ctx.font = 'bold 12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(b.name, bx, h - 46);
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillText(`${b.rade.toFixed(2)} R_Earth`, bx, h - 26);
+      });
+      ctx.textAlign = 'left';
+    }
+
+    // =========================================================================
+    // MODULE 02: 3D TILTED HOLO-ORRERY
+    // =========================================================================
+    let orreryHitTargets = [];
+
+    function drawOrreryCanvas() {
+      const canvas = document.getElementById('orrery-canvas');
+      if (!canvas || !selectedPlanet) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height, cx = w * 0.5, cy = h * 0.5;
+      const zoom = Number(document.getElementById('orrery-zoom').value || 1.1);
+      const tilt = Number(document.getElementById('orrery-tilt').value || 0.58);
+
+      drawSciFiStarfield(ctx, w, h, hashStr(selectedPlanet.hostname + '_orrery'));
+
+      const siblings = allPlanets
+        .filter(x => x.hostname === selectedPlanet.hostname)
+        .sort((a, b) => (Number(a.pl_orbsmax) || 0) - (Number(b.pl_orbsmax) || 0));
+
+      const maxAu = Math.max(Number(selectedPlanet.hz_out_au) * 1.25, ...siblings.map(s => Number(s.pl_orbsmax) || 0.1));
+      const scaleAu = (Math.min(w, h) * 0.42 * zoom) / Math.max(maxAu, 0.01);
+
+      // 3D Tilted Habitable Zone Torus
+      const hzInPx = Number(selectedPlanet.hz_in_au) * scaleAu;
+      const hzOutPx = Number(selectedPlanet.hz_out_au) * scaleAu;
+      if (hzOutPx > 8 && hzInPx < w * 1.5) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, hzOutPx, hzOutPx * tilt, 0, 0, Math.PI * 2);
+        ctx.ellipse(cx, cy, Math.max(4, hzInPx), Math.max(4, hzInPx) * tilt, 0, 0, Math.PI * 2, true);
+        ctx.fillStyle = 'rgba(0, 255, 157, 0.13)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0, 255, 157, 0.45)';
+        ctx.setLineDash([6, 6]);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Host Star at System Barycenter
+      const starInfo = getStarColors(selectedPlanet.st_teff, selectedPlanet.st_spectype);
+      drawStarWithDiffractionSpikes(ctx, cx, cy, 18, starInfo, animPhase);
+
+      orreryHitTargets = [];
+      siblings.forEach((s, idx) => {
+        const aPx = Math.max(28 + idx * 16, (Number(s.pl_orbsmax) || 0.05) * scaleAu);
+        const bPx = aPx * tilt;
+        const isSel = s.pl_name === selectedPlanet.pl_name;
+
+        ctx.strokeStyle = isSel ? '#00f0ff' : 'rgba(148, 163, 184, 0.35)';
+        ctx.lineWidth = isSel ? 2.0 : 1.1;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, aPx, bPx, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        const period = Math.max(0.5, Number(s.pl_orbper) || 10);
+        const angle = (idx * 1.7) + animPhase * (12.0 / Math.pow(period, 0.65));
+        const px = cx + Math.cos(angle) * aPx;
+        const py = cy + Math.sin(angle) * bPx;
+        const pr = Math.max(5, Math.min(14, (Number(s.pl_rade) || 1) * 4.0));
+
+        ctx.fillStyle = isSel ? '#00f0ff' : '#38bdf8';
+        ctx.beginPath(); ctx.arc(px, py, pr, 0, Math.PI * 2); ctx.fill();
+        if (isSel) {
+          ctx.strokeStyle = '#00f0ff';
+          ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(px, py, pr + 6, 0, Math.PI * 2); ctx.stroke();
+        }
+
+        ctx.fillStyle = isSel ? '#00f0ff' : '#e2f1ff';
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText(s.pl_name, px + pr + 7, py + 4);
+        orreryHitTargets.push({ x: px, y: py, r: pr, planet: s });
+      });
+    }
+
+    // =========================================================================
+    // MODULE 03: 3D GALACTIC SECTOR RADAR (SOLAR NEIGHBORHOOD STARMAP)
+    // =========================================================================
+    function drawStarmapCanvas() {
+      const canvas = document.getElementById('starmap-canvas');
+      if (!canvas || !selectedPlanet) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width, h = canvas.height, cx = w * 0.5, cy = h * 0.54;
+      const yaw = Number(document.getElementById('starmap-yaw').value || 0.75) + animPhase * 0.06;
+      const zoom = Number(document.getElementById('starmap-zoom').value || 1.2);
+
+      drawSciFiStarfield(ctx, w, h, 99123);
+
+      // Galactic plane concentric range rings (10, 25, 50, 100 parsecs)
+      [10, 25, 50, 100].forEach(pc => {
+        const rPx = pc * 4.2 * zoom;
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.22)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rPx, rPx * 0.45, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.65)';
+        ctx.font = '12px monospace';
+        ctx.fillText(`${pc} pc (${Math.round(pc * 3.26)} ly)`, cx + rPx + 6, cy);
+      });
+
+      // Sol [0,0,0] Origin
+      ctx.fillStyle = '#fde047';
+      ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillText('SOL [EARTH]', cx + 10, cy - 6);
+
+      // Deduplicate host stars and plot in 3D space (logarithmic spiral radial distribution, no clamping ring)
+      const seenStars = new Set();
+      allPlanets.forEach(p => {
+        if (seenStars.has(p.hostname)) return;
+        seenStars.add(p.hostname);
+
+        const rawDist = Math.max(1.3, Number(p.sy_dist) || 35);
+        const hSeed = hashStr(p.hostname);
+        const scaledDist = Math.min(125, Math.pow(rawDist, 0.58) * 5.2 + ((hSeed % 17) - 8) * 0.45);
+        const theta = ((hSeed % 3600) / 10) * (Math.PI / 180) + yaw;
+        const elev = (((hSeed >> 8) % 200) / 100 - 1.0) * 78 * zoom;
+
+        const sx = cx + Math.cos(theta) * scaledDist * 3.8 * zoom;
+        const planeY = cy + Math.sin(theta) * scaledDist * 3.8 * zoom * 0.45;
+        const sy = planeY - elev;
+
+        const isTargetStar = p.hostname === selectedPlanet.hostname;
+
+        // Elevation stalk to Galactic Plane
+        if (isTargetStar || (hSeed % 8 === 0)) {
+          ctx.strokeStyle = isTargetStar ? 'rgba(0, 255, 157, 0.75)' : 'rgba(0, 240, 255, 0.12)';
+          ctx.lineWidth = isTargetStar ? 1.8 : 0.8;
+          ctx.beginPath(); ctx.moveTo(sx, planeY); ctx.lineTo(sx, sy); ctx.stroke();
+        }
+
+        if (isTargetStar) {
+          // Hyper-lane vector from SOL to Target Star
+          ctx.save();
+          ctx.strokeStyle = '#00ff9d';
+          ctx.lineWidth = 2.2;
+          ctx.setLineDash([8, 6]);
+          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sx, sy); ctx.stroke();
+          ctx.restore();
+
+          ctx.fillStyle = '#00ff9d';
+          ctx.font = 'bold 12px monospace';
+          ctx.fillText(`>>> ${p.hostname.toUpperCase()} (${rawDist.toFixed(1)} pc)`, sx + 10, sy - 6);
+        }
+
+        ctx.fillStyle = isTargetStar ? '#00ff9d' : (p.is_habitable_candidate ? '#34d399' : '#38bdf8');
+        ctx.beginPath(); ctx.arc(sx, sy, isTargetStar ? 6.5 : 2.2, 0, Math.PI * 2); ctx.fill();
+      });
+
+      const distLy = (Number(selectedPlanet.sy_dist) || 12.43) * 3.26156;
+      document.getElementById('starmap-transit-box').innerHTML = `
+        <div class="flex justify-between"><span>ORIGIN:</span><strong class="neon-amber">SOL SYSTEM (EARTH)</strong></div>
+        <div class="flex justify-between"><span>DESTINATION:</span><strong class="neon-cyan">${selectedPlanet.pl_name}</strong></div>
+        <div class="flex justify-between"><span>ASTROMETRIC RANGE:</span><strong>${distLy.toFixed(2)} LIGHT-YEARS</strong></div>
+        <div class="flex justify-between"><span>PARSEC DISTANCE:</span><strong>${Number(selectedPlanet.sy_dist || 12.4).toFixed(2)} PC</strong></div>
+        <hr class="border-cyan-500/20" />
+        <div class="text-cyan-400 font-bold">PROPULSION TRANSIT ESTIMATES:</div>
+        <div class="flex justify-between"><span>PHOTONIC BEAM (1.00 c):</span><strong>${distLy.toFixed(1)} YRS</strong></div>
+        <div class="flex justify-between"><span>DAEDALUS FUSION (0.12 c):</span><strong>${(distLy / 0.12).toFixed(0)} YRS</strong></div>
+        <div class="flex justify-between"><span>ALCUBIERRE WARP (100 c):</span><strong class="neon-emerald">${((distLy / 100) * 365.25).toFixed(1)} DAYS</strong></div>
+      `;
+    }
+
+    // =========================================================================
+    // MODULE 04: 6-CHANNEL SENSOR SUITE & AI RECON ART
+    // =========================================================================
+    function renderAllGalleryScenes() {
+      if (!selectedPlanet) return;
+      const p = selectedPlanet;
+      document.getElementById('gallery-header-title').textContent =
+        `// 6-CHANNEL SYNCHRONIZED SENSOR SUITE — TARGET: ${p.pl_name.toUpperCase()}`;
+
+      const c1 = document.getElementById('gallery-canvas-1');
+      drawSurfacePanorama(c1.getContext('2d'), c1.width, c1.height, p, true, false);
+      document.getElementById('gallery-desc-1').textContent = `Horizon rise of ${p.hostname} (${p.st_teff} K) across ${p.pl_name}.`;
+
+      const c2 = document.getElementById('gallery-canvas-2');
+      drawMagnetosphereSimulation(c2.getContext('2d'), c2.width, c2.height, p, false);
+      document.getElementById('gallery-desc-2').textContent = `Stellar wind bow-shock & dipolar magnetosphere deflection.`;
+
+      const c3 = document.getElementById('gallery-canvas-3');
+      drawInteriorCutaway(c3.getContext('2d'), c3.width, c3.height, p, false);
+      document.getElementById('gallery-desc-3').textContent = `Internal core-to-exosphere structural cutaway.`;
+
+      const c4 = document.getElementById('gallery-canvas-4');
+      drawScaleComparison(c4.getContext('2d'), c4.width, c4.height, p);
+      document.getElementById('gallery-desc-4').textContent = `Physical radius comparison (${Number(p.pl_rade).toFixed(2)} R_Earth).`;
+
+      const c5 = document.getElementById('gallery-canvas-5');
+      drawTransmissionSpectrum(c5.getContext('2d'), c5.width, c5.height, p);
+      document.getElementById('gallery-desc-5').textContent = `Simulated 0.8–5.2 um JWST NIRSpec transmission spectrum.`;
+
+      const c6 = document.getElementById('gallery-canvas-6');
+      drawThermalMap(c6.getContext('2d'), c6.width, c6.height, p);
+      document.getElementById('gallery-desc-6').textContent = `Substellar-to-antistellar infrared atmospheric heat circulation.`;
+    }
+
+    function drawTransmissionSpectrum(ctx, w, h, p) {
+      ctx.fillStyle = '#020617';
+      ctx.fillRect(0, 0, w, h);
+      const rng = seededRandom(hashStr(p.pl_name + '_spec'));
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const peaks = [
+        { x: 0.22, label: 'H2O', amp: 38 },
+        { x: 0.42, label: 'H2O', amp: 46 },
+        { x: 0.58, label: 'CH4', amp: 34 },
+        { x: 0.78, label: 'CO2', amp: 60 }
+      ];
+      for (let px = 36; px <= w - 20; px += 4) {
+        const u = (px - 36) / (w - 56);
+        let yVal = h * 0.70;
+        peaks.forEach(pk => {
+          const d = (u - pk.x) / 0.045;
+          yVal -= pk.amp * Math.exp(-d * d);
+        });
+        yVal += (rng() - 0.5) * 5;
+        if (px === 36) ctx.moveTo(px, yVal); else ctx.lineTo(px, yVal);
+      }
+      ctx.stroke();
+      peaks.forEach(pk => {
+        const px = 36 + pk.x * (w - 56);
+        ctx.fillStyle = '#00ff9d';
+        ctx.font = 'bold 12px monospace';
+        ctx.fillText(pk.label, px - 14, h * 0.70 - pk.amp - 10);
+      });
+    }
+
+    function drawThermalMap(ctx, w, h, p) {
+      const eqt = Number(p.pl_eqt) || 255;
+      const grad = ctx.createRadialGradient(w * 0.46, h * 0.5, 8, w * 0.5, h * 0.5, w * 0.52);
+      grad.addColorStop(0, '#fef08a');
+      grad.addColorStop(0.35, eqt > 900 ? '#f97316' : '#00ff9d');
+      grad.addColorStop(0.7, '#0284c7');
+      grad.addColorStop(1, '#020617');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 12px monospace';
+      ctx.fillText(`DAYSIDE PEAK: ~${Math.round(eqt * 1.22)} K // NIGHTSIDE MIN: ~${Math.round(eqt * 0.58)} K`, 16, 26);
+    }
+
+    // =========================================================================
+    // UI CONTROLLERS, FILTERS & WARP TRANSITIONS
+    // =========================================================================
+    let visibleLimit = 80;
+    let autoScanTimer = null;
+
+    function warpToPlanet(name) {
+      warpJumpTimer = 14;
+      selectPlanetByName(name);
+    }
+
+    function triggerRandomDiscovery() {
+      if (!allPlanets.length) return;
+      const pool = filteredPlanets.length ? filteredPlanets : allPlanets;
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      if (pick) warpToPlanet(pick.pl_name);
+    }
+
+    function toggleContinuousAutoScan() {
+      const btn = document.getElementById('btn-auto-scan');
+      if (autoScanTimer) {
+        clearInterval(autoScanTimer);
+        autoScanTimer = null;
+        if (btn) {
+          btn.textContent = 'AUTO-SCANNER: OFF';
+          btn.className = 'scifi-btn px-2 py-1.5 text-xs border-emerald-400/50 text-emerald-300';
+        }
+      } else {
+        triggerRandomDiscovery();
+        autoScanTimer = setInterval(triggerRandomDiscovery, 6500);
+        if (btn) {
+          btn.textContent = 'AUTO-SCANNER: ACTIVE';
+          btn.className = 'scifi-btn scifi-btn-active px-2 py-1.5 text-xs';
+        }
+      }
+    }
+
+    function loadMorePlanets() {
+      visibleLimit += 100;
+      renderPlanetList();
+    }
+
+    function selectPlanetByName(name) {
+      const found = allPlanets.find(p => p.pl_name === name);
+      if (found) selectPlanet(found);
+    }
+
+    function selectPlanet(p) {
+      selectedPlanet = p;
+      window.selectedPlanet = p;
+      synthesizePlanetTexture(p);
+      renderPlanetList();
+
+      const rade = Number(p.pl_rade) || 1.0;
+      const bmasse = Number(p.pl_bmasse) || 1.0;
+      const grav = bmasse / (rade * rade);
+      const vesc = 11.186 * Math.sqrt(bmasse / rade);
+
+      document.getElementById('selected-planet-title').textContent = p.pl_name;
+      document.getElementById('selected-planet-class-badge').textContent = p.planet_class;
+      document.getElementById('selected-planet-hz-badge').textContent = `${p.hz_status} // ESI ${Number(p.esi).toFixed(2)}`;
+      document.getElementById('hud-overlay-line1').textContent = `SURFACE GRAVITY: ${grav.toFixed(2)} G`;
+      document.getElementById('hud-overlay-line2').textContent = `ESCAPE VELOCITY: ${vesc.toFixed(1)} KM/S`;
+      document.getElementById('hud-overlay-line3').textContent = `ESI BIOSCORE: ${Number(p.esi).toFixed(3)}`;
+
+      const stName = document.getElementById('ship-target-name');
+      const stClass = document.getElementById('ship-target-class');
+      const stHz = document.getElementById('ship-target-hz');
+      if (stName) stName.textContent = p.pl_name;
+      if (stClass) stClass.textContent = p.planet_class;
+      if (stHz) stHz.textContent = `${p.hz_status} (ESI ${Number(p.esi).toFixed(2)})`;
+
+      const distLy = p.sy_dist ? `${Number(p.sy_dist).toFixed(2)} PC (${(Number(p.sy_dist) * 3.26156).toFixed(1)} LY)` : 'RANGE UNMEASURED';
+      document.getElementById('selected-planet-subtitle').innerHTML =
+        `HOST: <strong>${p.hostname}</strong> (${p.st_spectype || 'MAIN SEQ'}, ${p.st_teff || 5200} K) // RANGE: ${distLy} // SYSTEM BODIES: ${p.sy_pnum || 1}`;
+
+      const siblings = allPlanets
+        .filter(x => x.hostname === p.hostname)
+        .sort((a, b) => (Number(a.pl_orbsmax) || 0) - (Number(b.pl_orbsmax) || 0));
+
+      const sibBar = document.getElementById('sibling-planets-bar');
+      if (siblings.length > 1) {
+        sibBar.innerHTML = `<span class="text-xs text-cyan-400 mr-1">SYSTEM CHAIN (${siblings.length}):</span>` +
+          siblings.map(s => {
+            const act = s.pl_name === p.pl_name;
+            return `<button onclick="warpToPlanet('${String(s.pl_name).replace(/'/g, "\\'")}')" class="scifi-btn ${act ? 'scifi-btn-active' : ''} px-2.5 py-1">
+              ${s.pl_name} (${Number(s.pl_orbsmax).toFixed(3)} AU)
+            </button>`;
+          }).join('');
+      } else {
+        sibBar.innerHTML = `<span class="text-xs text-slate-400">SINGLE CONFIRMED BODY IN CATALOG FOR HOST STAR <strong>${p.hostname}</strong>.</span>`;
+      }
+
+      renderMetricsAndExplanation(p, rade, bmasse, grav, vesc);
+      updateOrrerySidebar();
+      if (currentMainTab === 'gallery') renderAllGalleryScenes();
+    }
+
+    function renderMetricsAndExplanation(p, rade, bmasse, grav, vesc) {
+      const eqtC = (Number(p.pl_eqt) - 273.15).toFixed(0);
+      const starAngleRatio = (Number(p.st_rad) || 0.8) / Math.max(Number(p.pl_orbsmax) || 0.1, 0.002);
+
+      const metrics = [
+        { label: 'PLANETARY RADIUS', val: `${rade.toFixed(2)} Re (${(rade * 6371).toFixed(0)} km)` },
+        { label: 'PLANETARY MASS', val: `${bmasse.toFixed(2)} Me` },
+        { label: 'SURFACE GRAVITY', val: `${grav.toFixed(2)} g (${(grav * 9.81).toFixed(1)} m/s²)` },
+        { label: 'ESCAPE VELOCITY', val: `${vesc.toFixed(1)} km/s` },
+        { label: 'EQUILIBRIUM TEMP', val: `${Math.round(p.pl_eqt)} K (${eqtC} °C)` },
+        { label: 'ORBITAL PERIOD', val: p.pl_orbper ? `${Number(p.pl_orbper).toFixed(2)} days` : 'Long-Period' },
+        { label: 'SEMI-MAJOR AXIS', val: `${Number(p.pl_orbsmax).toFixed(4)} AU` },
+        { label: 'ECCENTRICITY', val: `${Number(p.pl_orbeccen || 0).toFixed(3)}` },
+        { label: 'STAR ANGULAR DISC', val: `${starAngleRatio.toFixed(1)}× Sol from Earth` },
+        { label: 'SENSOR ARRAY', val: p.disc_facility || 'NASA Archive' }
+      ];
+
+      document.getElementById('metrics-grid').innerHTML = metrics.map(m => `
+        <div class="scifi-card p-2.5">
+          <div class="text-xs text-cyan-300/70">${m.label}</div>
+          <div class="text-xs font-bold text-white mt-0.5 truncate" title="${m.val}">${m.val}</div>
+        </div>
+      `).join('');
+
+      const starInfo = getStarColors(p.st_teff, p.st_spectype);
+      document.getElementById('scientific-explanation-box').innerHTML = `
+        <p><strong class="neon-cyan">// SURFACE &amp; ATMOSPHERIC REGIME:</strong> Classified as a <strong>${p.planet_class}</strong> orbiting in the <strong>${p.hz_status}</strong> (${p.hz_in_au}–${p.hz_out_au} AU) with an Earth Similarity Index of <strong>${Number(p.esi).toFixed(3)}</strong> and equilibrium temperature of <strong>${Math.round(p.pl_eqt)} K (${eqtC} &deg;C)</strong>. Surface gravity measures <strong>${grav.toFixed(2)} g</strong> with an escape velocity of <strong>${vesc.toFixed(1)} km/s</strong>.</p>
+        <p><strong class="neon-amber">// STELLAR IRRADIATION &amp; SKY OPTICS:</strong> Host star <strong>${p.hostname}</strong> is a <strong>${starInfo.label}</strong> (${p.st_teff || 5200} K). From ${p.pl_name}'s upper atmosphere, the primary star spans <strong>${starAngleRatio.toFixed(1)}&times; the angular diameter of the Sun from Earth</strong>.</p>
+        <p><strong class="neon-emerald">// DETECTION &amp; ASTROMETRIC LOG:</strong> Confirmed in <strong>${p.disc_year}</strong> via <strong>${p.discoverymethod}</strong> by <strong>${p.disc_facility}</strong>. System architecture comprises <strong>${p.sy_pnum || 1} confirmed planet(s)</strong> and <strong>${p.sy_snum || 1} star(s)</strong>.</p>
+      `;
+    }
+
+    function applyFilters() {
+      const q = (document.getElementById('search-input').value || '').trim().toLowerCase();
+      const cls = document.getElementById('filter-class').value;
+      const hz = document.getElementById('filter-hz').value;
+      const era = document.getElementById('filter-era').value;
+      const sortBy = document.getElementById('sort-by').value;
+
+      filteredPlanets = allPlanets.filter(p => {
+        if (q) {
+          const hay = `${p.pl_name} ${p.hostname} ${p.discoverymethod} ${p.disc_facility} ${p.planet_class} ${p.st_spectype}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        if (cls !== 'ALL' && p.planet_class !== cls) return false;
+        if (hz === 'HZ_ANY') {
+          if (!['Conservative HZ', 'Optimistic HZ', 'Temperate Zone'].includes(p.hz_status)) return false;
+        } else if (hz !== 'ALL' && p.hz_status !== hz) return false;
+        if (era === '2026' && Number(p.disc_year) !== 2026) return false;
+        if (era === '2025_2026' && Number(p.disc_year) < 2025) return false;
+        if (era === 'MULTI' && Number(p.sy_pnum) <= 1) return false;
+        if (era === 'HIGH_ESI' && Number(p.esi) < 0.80) return false;
+        return true;
+      });
+
+      filteredPlanets.sort((a, b) => {
+        if (sortBy === 'esi_desc') return (Number(b.esi) || 0) - (Number(a.esi) || 0);
+        if (sortBy === 'year_desc') return (Number(b.disc_year) || 0) - (Number(a.disc_year) || 0);
+        if (sortBy === 'dist_asc') return (Number(a.sy_dist) || 99999) - (Number(b.sy_dist) || 99999);
+        if (sortBy === 'rade_asc') return (Number(a.pl_rade) || 999) - (Number(b.pl_rade) || 999);
+        if (sortBy === 'eqt_desc') return (Number(b.pl_eqt) || 0) - (Number(a.pl_eqt) || 0);
+        return 0;
+      });
+
+      visibleLimit = 80;
+      document.getElementById('filtered-count-badge').textContent = `${filteredPlanets.length.toLocaleString()} TARGETS`;
+      renderPlanetList();
+    }
+
+    function renderPlanetList() {
+      const container = document.getElementById('planet-list-container');
+      const slice = filteredPlanets.slice(0, visibleLimit);
+      const rangeLbl = document.getElementById('visible-range-label');
+      const loadBtn = document.getElementById('btn-load-more');
+      if (rangeLbl) rangeLbl.textContent = `SHOWING ${slice.length.toLocaleString()} / ${filteredPlanets.length.toLocaleString()}`;
+      if (loadBtn) loadBtn.style.display = (slice.length < filteredPlanets.length) ? 'inline-block' : 'none';
+
+      container.innerHTML = slice.map(p => {
+        const isSel = selectedPlanet && selectedPlanet.pl_name === p.pl_name;
+        const distLy = p.sy_dist ? (Number(p.sy_dist) * 3.26156).toFixed(1) + ' LY' : 'RANGE N/A';
+        return `
+          <button onclick="warpToPlanet('${String(p.pl_name).replace(/'/g, "\\'")}')" class="w-full text-left p-3 scifi-card ${isSel ? 'scifi-card-active' : ''} space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-sm text-white truncate">${p.pl_name}</span>
+              <span class="text-xs px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/40 neon-cyan">ESI ${Number(p.esi).toFixed(2)}</span>
+            </div>
+            <div class="text-xs text-cyan-200/80">${p.planet_class} // ${p.hz_status}</div>
+            <div class="flex justify-between text-xs text-slate-400">
+              <span>${Number(p.pl_rade || 1).toFixed(2)} Re | ${Math.round(Number(p.pl_eqt || 255))} K</span>
+              <span>${distLy} &bull; ${p.disc_year || ''}</span>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function updateOrrerySidebar() {
+      if (!selectedPlanet) return;
+      const p = selectedPlanet;
+      document.getElementById('orrery-system-title').textContent = `// ${p.hostname.toUpperCase()} SYSTEM 3D HOLOGRAPHIC ORRERY`;
+      const starInfo = getStarColors(p.st_teff, p.st_spectype);
+      document.getElementById('orrery-star-details').innerHTML = `
+        <div class="flex justify-between"><span>PRIMARY STAR:</span><strong class="neon-cyan">${p.hostname}</strong></div>
+        <div class="flex justify-between"><span>SPECTRAL CLASS:</span><strong>${starInfo.label}</strong></div>
+        <div class="flex justify-between"><span>EFFECTIVE TEMP:</span><strong>${p.st_teff || 5200} K</strong></div>
+        <div class="flex justify-between"><span>CONSERVATIVE HZ:</span><strong class="neon-emerald">${p.hz_in_au} – ${p.hz_out_au} AU</strong></div>
+      `;
+      const siblings = allPlanets.filter(x => x.hostname === p.hostname).sort((a, b) => (Number(a.pl_orbsmax) || 0) - (Number(b.pl_orbsmax) || 0));
+      document.getElementById('orrery-planet-table').innerHTML = siblings.map(s => `
+        <button onclick="warpToPlanet('${String(s.pl_name).replace(/'/g, "\\'")}')" class="w-full text-left p-2.5 scifi-card ${s.pl_name === p.pl_name ? 'scifi-card-active' : ''} flex justify-between">
+          <div><div class="font-bold text-white">${s.pl_name}</div><div class="text-slate-400">${s.planet_class}</div></div>
+          <div class="text-right text-cyan-300"><div>${Number(s.pl_orbsmax).toFixed(3)} AU</div><div>${s.pl_orbper ? Number(s.pl_orbper).toFixed(1) + ' d' : ''}</div></div>
+        </button>
+      `).join('');
+    }
+
+    function switchMainTab(tab) {
+      currentMainTab = tab;
+      window.currentMainTab = tab;
+      ['explorer', 'spaceship', 'orrery', 'starmap', 'gallery', 'analytics'].forEach(t => {
+        const panel = document.getElementById('panel-' + t);
+        const btn = document.getElementById('tab-btn-' + t);
+        if (!panel || !btn) return;
+        if (t === tab) {
+          panel.classList.remove('hidden');
+          btn.className = 'scifi-btn scifi-btn-active px-3.5 py-2';
+        } else {
+          panel.classList.add('hidden');
+          btn.className = 'scifi-btn px-3.5 py-2';
+        }
+      });
+      if (tab === 'gallery') renderAllGalleryScenes();
+      if (tab === 'analytics') renderAnalyticsCharts();
+      if (tab === 'orrery') updateOrrerySidebar();
+    }
+
+    function setArtViewMode(mode) {
+      currentArtMode = mode;
+      ['orbital', 'surface', 'magneto', 'interior', 'scale'].forEach(m => {
+        const btn = document.getElementById('art-mode-' + m);
+        btn.className = (m === mode) ? 'scifi-btn scifi-btn-active px-2.5 py-1.5' : 'scifi-btn px-2.5 py-1.5';
+      });
+    }
+
+    function renderAnalyticsBars() {
+      if (!ATLAS) return;
+      const methods = ATLAS.discovery_methods || [];
+      const maxM = Math.max(1, ...methods.map(m => Number(m.cnt)));
+      document.getElementById('methods-bars-container').innerHTML = methods.slice(0, 8).map(m => {
+        const pct = Math.max(2, (Number(m.cnt) / maxM) * 100).toFixed(1);
+        return `
+          <div class="space-y-1">
+            <div class="flex justify-between"><span class="text-white">${m.discoverymethod}</span><span class="neon-cyan">${Number(m.cnt).toLocaleString()}</span></div>
+            <div class="w-full h-2 bg-slate-900 rounded overflow-hidden border border-cyan-500/30"><div class="h-full bg-cyan-400" style="width:${pct}%"></div></div>
+          </div>`;
+      }).join('');
+
+      const facs = ATLAS.top_facilities || [];
+      const maxF = Math.max(1, ...facs.map(f => Number(f.cnt)));
+      document.getElementById('facilities-bars-container').innerHTML = facs.slice(0, 8).map(f => {
+        const pct = Math.max(2, (Number(f.cnt) / maxF) * 100).toFixed(1);
+        return `
+          <div class="space-y-1">
+            <div class="flex justify-between"><span class="text-white truncate pr-2">${f.disc_facility}</span><span class="neon-amber">${Number(f.cnt).toLocaleString()}</span></div>
+            <div class="w-full h-2 bg-slate-900 rounded overflow-hidden border border-amber-500/30"><div class="h-full bg-amber-400" style="width:${pct}%"></div></div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderAnalyticsCharts() {
+      const sc = document.getElementById('chart-scatter-canvas');
+      if (sc) {
+        const ctx = sc.getContext('2d'), w = sc.width, h = sc.height;
+        ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, w, h);
+        const padL = 50, padR = 20, padT = 20, padB = 36, pw = w - padL - padR, ph = h - padT - padB;
+        const x1 = padL + (180 / 2200) * pw, x2 = padL + (310 / 2200) * pw;
+        const y1 = padT + ph - (2.0 / 16) * ph, y2 = padT + ph - (0.5 / 16) * ph;
+        ctx.fillStyle = 'rgba(0, 255, 157, 0.16)'; ctx.fillRect(x1, y1, x2 - x1, y2 - y1);
+        ctx.strokeStyle = '#00ff9d'; ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+        allPlanets.forEach(p => {
+          const eqt = Math.min(2150, Math.max(50, Number(p.pl_eqt) || 255));
+          const rade = Math.min(15.5, Math.max(0.3, Number(p.pl_rade) || 1));
+          const x = padL + (eqt / 2200) * pw, y = padT + ph - (rade / 16) * ph;
+          ctx.fillStyle = Number(p.esi) >= 0.8 ? '#00ff9d' : (eqt > 1000 ? '#ff2a6d' : '#00f0ff');
+          ctx.beginPath(); ctx.arc(x, y, Number(p.esi) >= 0.8 ? 4.5 : 3, 0, Math.PI * 2); ctx.fill();
+        });
+      }
+
+      const yc = document.getElementById('chart-years-canvas');
+      if (yc && ATLAS && ATLAS.discovery_years) {
+        const ctx = yc.getContext('2d'), w = yc.width, h = yc.height;
+        ctx.fillStyle = '#020617'; ctx.fillRect(0, 0, w, h);
+        const yrs = ATLAS.discovery_years.filter(y => Number(y.disc_year) >= 1995);
+        const maxCnt = Math.max(1, ...yrs.map(y => Number(y.cnt)));
+        const padL = 45, padR = 20, padT = 20, padB = 34, pw = w - padL - padR, ph = h - padT - padB;
+        const bw = Math.max(4, (pw / yrs.length) - 3);
+        yrs.forEach((y, i) => {
+          const bh = (Number(y.cnt) / maxCnt) * ph;
+          const bx = padL + i * (pw / yrs.length), by = padT + ph - bh;
+          ctx.fillStyle = Number(y.disc_year) >= 2025 ? '#00ff9d' : '#00f0ff';
+          ctx.fillRect(bx, by, bw, bh);
+        });
+      }
+    }
+
+    function exportCurrentCanvas() {
+      const canvas = document.getElementById('artistic-main-canvas');
+      if (!canvas || !selectedPlanet) return;
+      const link = document.createElement('a');
+      link.download = `${selectedPlanet.pl_name.replace(/\s+/g, '_')}_scifi_recon.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function initApp() {
+      if (!ATLAS) return;
+      document.getElementById('sync-timestamp-badge').textContent = 'SYNC EPOCH: ' + (ATLAS.last_updated_local || ATLAS.last_updated_utc);
+      if (ATLAS.summary) {
+        document.getElementById('stat-total-planets').textContent = Number(ATLAS.summary.total_confirmed_planets).toLocaleString();
+        document.getElementById('stat-total-stars').textContent = Number(ATLAS.summary.total_host_stars).toLocaleString();
+        document.getElementById('stat-multi-systems').textContent = Number(ATLAS.summary.multi_planet_systems).toLocaleString() + ' MULTI-ORB';
+        document.getElementById('stat-hz-count').textContent = Number(ATLAS.summary.habitable_candidates).toLocaleString();
+      }
+      if (window.EXOPLANET_CONCEPT_ART) {
+        if (window.EXOPLANET_CONCEPT_ART.trappist1e) document.getElementById('concept-img-trappist').src = window.EXOPLANET_CONCEPT_ART.trappist1e;
+        if (window.EXOPLANET_CONCEPT_ART.cnc55e) document.getElementById('concept-img-55cnc').src = window.EXOPLANET_CONCEPT_ART.cnc55e;
+      }
+
+      const c = document.getElementById('artistic-main-canvas');
+      c.addEventListener('mousedown', e => { isDraggingGlobe = true; dragStartX = e.clientX; });
+      window.addEventListener('mouseup', () => { isDraggingGlobe = false; });
+      window.addEventListener('mousemove', e => {
+        if (!isDraggingGlobe) return;
+        globeRotation += (e.clientX - dragStartX) * 0.012;
+        dragStartX = e.clientX;
+      });
+
+      const orreryCanvas = document.getElementById('orrery-canvas');
+      orreryCanvas.addEventListener('click', e => {
+        const rect = orreryCanvas.getBoundingClientRect();
+        const mx = (e.clientX - rect.left) * (orreryCanvas.width / rect.width);
+        const my = (e.clientY - rect.top) * (orreryCanvas.height / rect.height);
+        for (const t of orreryHitTargets) {
+          if (Math.hypot(mx - t.x, my - t.y) <= Math.max(t.r + 8, 14)) {
+            warpToPlanet(t.planet.pl_name);
+            return;
+          }
+        }
+      });
+
+      window.warpToPlanet = warpToPlanet;
+      window.triggerRandomDiscovery = triggerRandomDiscovery;
+      window.drawSciFiStarfield = drawSciFiStarfield;
+      window.getStarColors = getStarColors;
+      window.drawStarWithDiffractionSpikes = drawStarWithDiffractionSpikes;
+      window.renderRaycastPlanetGlobe = renderRaycastPlanetGlobe;
+      window.currentMainTab = currentMainTab;
+
+      if (window.SpaceshipRoam) {
+        window.SpaceshipRoam.build3DStarCatalog(allPlanets);
+        const shipCanvas = document.getElementById('spaceship-roam-canvas');
+        if (shipCanvas) window.SpaceshipRoam.initControls(shipCanvas);
+      }
+
+      applyFilters();
+      if (selectedPlanet) selectPlanet(selectedPlanet);
+      renderAnalyticsBars();
+      requestAnimationFrame(animationLoop);
+    }
+
+    function animationLoop() {
+      const speed = Number((document.getElementById('orrery-speed') || {}).value || 1.5);
+      animPhase += 0.01 * speed;
+      if (warpJumpTimer > 0) warpJumpTimer = Math.max(0, warpJumpTimer - 1);
+
+      if (currentMainTab === 'explorer' && selectedPlanet) {
+        drawMainArtisticCanvas(selectedPlanet);
+      } else if (currentMainTab === 'spaceship' && window.SpaceshipRoam) {
+        window.SpaceshipRoam.updateAndRender(document.getElementById('spaceship-roam-canvas'), animPhase);
+      } else if (currentMainTab === 'orrery' && selectedPlanet) {
+        drawOrreryCanvas();
+      } else if (currentMainTab === 'starmap' && selectedPlanet) {
+        drawStarmapCanvas();
+      }
+      requestAnimationFrame(animationLoop);
+    }
+
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>

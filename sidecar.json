@@ -1,0 +1,29 @@
+{
+  "builtin": "schedule",
+  "args": [
+    "CRON_TZ=America/Chicago 0 * * * *",
+    "agentapi",
+    "new-conversation",
+    "--",
+    "Run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\\Users\\mmass\\.gemini\\antigravity\\scratch\\exoplanet-explorer\\sync_exoplanets.ps1` to query the NASA Exoplanet Archive TAP API (https://exoplanetarchive.ipac.caltech.edu/TAP/sync) and the Open Exoplanet Catalogue XML mirror (https://raw.githubusercontent.com/OpenExoplanetCatalogue/open_exoplanet_catalogue) for the latest confirmed exoplanets and stellar host parameters. Verify that `C:\\Users\\mmass\\.gemini\\antigravity\\scratch\\exoplanet-explorer\\data\\exoplanets.json`, `data\\exoplanets_bundle.js`, and `index.html` are updated, then deploy the updated build to Netlify site `25dfa895-4d8a-45bf-babd-e43c25b6856e` (https://astronav-exo-command.netlify.app) using the `netlify-deploy-services-updater` MCP tool."
+  ],
+  "enabled": false,
+  "restart_policy": "never",
+  "display_name": "Hourly Exoplanet Data & Atlas Updater",
+  "description": "Every hour at :00 (America/Chicago), queries the NASA Exoplanet Archive TAP API and Open Exoplanet Catalogue to update the local interactive Sci-Fi Exoplanet Observatory GUI and publishes the updated build to https://astronav-exo-command.netlify.app.",
+  "agent_permissions": {
+    "workspace_uris": [
+      "file:///C:/Users/mmass/.gemini/antigravity/scratch/exoplanet-explorer"
+    ],
+    "access_grants": [
+      "command(powershell.exe -NoProfile -ExecutionPolicy Bypass -File)",
+      "command(curl.exe)",
+      "read_file(C:/Users/mmass/.gemini/antigravity/scratch/exoplanet-explorer)",
+      "write_file(C:/Users/mmass/.gemini/antigravity/scratch/exoplanet-explorer)",
+      "read_url(exoplanetarchive.ipac.caltech.edu)",
+      "read_url(raw.githubusercontent.com)",
+      "read_url(netlify-mcp.netlify.app)",
+      "mcp(netlify_netlify/netlify-deploy-services-updater)"
+    ]
+  }
+}
