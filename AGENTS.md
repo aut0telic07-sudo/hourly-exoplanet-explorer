@@ -6,6 +6,20 @@ Transform this repository into the **premier interactive educational environment
 - Explains **how we detect and characterize exoplanets** (Transit Photometry, Radial Velocity / Doppler Spectroscopy, Direct Imaging & Coronagraphy, Gravitational Microlensing, Astrometry, Transit Timing Variations, and JWST Transmission/Emission Spectroscopy) with interactive physics simulations.
 - Showcases the **full diversity of exoplanetary systems** across all 6,451+ confirmed worlds in the NASA Exoplanet Archive—not just habitable-zone worlds, but also **extreme systems** (Ultra-Hot Jupiters with iron rain, tidally disrupted egg-shaped worlds, magma-ocean Lava Super-Earths, ultra-low-density "Super-Puffs", evaporating comet-like planets, Pulsar planets, circumbinary "Tatooine" worlds, and extreme-eccentricity flash-heated worlds).
 
+## Video-Game Usability & Diegetic Sci-Fi UX Standard (Mandatory for All Agents)
+All agents must design and build with **video-game usability and tactile feel**—taking inspiration from the *Mass Effect* Galaxy Map, *Elite Dangerous* / *Starfield* System Scanners, *No Man's Sky* Discovery Codex, *Outer Wilds* Ship Log, and *Universe Sandbox*:
+1. **Zero "Wall-of-Text" Rule — Scanner HUD & Codex Cards**:
+   - Never present dry academic paragraphs or raw unformatted tables.
+   - Present planet data like a **Sci-Fi Ship Scanner / Game Codex**: visual stat bars, color-coded **Environmental Hazard Badges** (`MOLTEN IRON RAIN`, `TIDALLY LOCKED`, `SUPERSONIC ROCK WINDS`, `PULSAR RADIATION`, `HABITABLE ZONE`), instant **Scale Silhouettes** (Earth / Jupiter comparison rings right next to the planet), and punchy 1–2 sentence "Scanner Briefings" with progressive-disclosure tabs for deeper astrophysics.
+2. **Toy-Like Direct Manipulation (60fps "Play With the Physics")**:
+   - Every scientific concept must feel like an interactive sandbox toy. Sliders, toggles, and canvas elements must respond at 60fps with immediate visual feedback.
+   - Include **One-Click Preset Cartridges** on every simulation (e.g., `[Load KELT-9b Inferno]`, `[Load TRAPPIST-1e]`, `[Load HD 80606b Comet Orbit]`) so users don't have to guess parameter values to see dramatic effects.
+3. **Guided "Expedition Missions" & Discovery Log**:
+   - Include an interactive **Expedition / Mission Selector** (guided 3–5 stop tours with a progress tracker, e.g., *"Expedition 1: Worlds of Fire & Iron Rain"*, *"Expedition 2: How We Spot Invisible Worlds"*, *"Expedition 3: Cosmic Giants & Super-Puffs"*, *"Expedition 4: The Search for Earth 2.0"*).
+4. **Game-Like Navigation, Persistent Target Context & Hotkeys**:
+   - Maintain a persistent **Active Target HUD** across all tabs so selecting a planet in the Extreme Codex, Population Scatter Plot, or 3D Cockpit keeps it locked in as the active target everywhere (`window.warpToPlanet(pl_name)`).
+   - Support crisp keyboard shortcuts (`1`–`6` to switch deck stations, `Space` to pause/resume orbital simulation, `R` for random warp jump, `/` for quick target search, `Esc` to dismiss modals) alongside effortless mouse/touch controls.
+
 ## Architecture & Build Pipeline (Critical Rule)
 1. **Source vs. Compiled Entrypoint**:
    - `template.html` is the **authoritative source HTML file**.
