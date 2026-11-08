@@ -15,7 +15,10 @@ if (!fs.existsSync(jsonPath)) {
   process.exit(1);
 }
 
-const rawJson = fs.readFileSync(jsonPath, 'utf8').trim();
+let rawJson = fs.readFileSync(jsonPath, 'utf8').trim();
+if (rawJson.charCodeAt(0) === 0xFEFF) {
+  rawJson = rawJson.slice(1);
+}
 fs.writeFileSync(jsBundlePath, `window.EXOPLANET_ATLAS_DATA = ${rawJson};\n`, 'utf8');
 
 const artMap = {};

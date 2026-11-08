@@ -159,9 +159,10 @@ $ArtJsPath    = Join-Path $DataDir "concept_art_bundle.js"
 $TemplatePath = Join-Path $BaseDir "template.html"
 $IndexPath    = Join-Path $BaseDir "index.html"
 
+$Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 $JsonText = $Payload | ConvertTo-Json -Depth 6 -Compress
-[System.IO.File]::WriteAllText($JsonPath, $JsonText, [System.Text.Encoding]::UTF8)
-[System.IO.File]::WriteAllText($JsPath, "window.EXOPLANET_ATLAS_DATA = $JsonText;`n", [System.Text.Encoding]::UTF8)
+[System.IO.File]::WriteAllText($JsonPath, $JsonText, $Utf8NoBom)
+[System.IO.File]::WriteAllText($JsPath, "window.EXOPLANET_ATLAS_DATA = $JsonText;`n", $Utf8NoBom)
 
 $ArtMap = @{}
 $TrappistImg = Join-Path $BaseDir "assets\trappist1e_horizon.jpg"
@@ -173,12 +174,12 @@ if (Test-Path $CncImg) {
     $ArtMap["cnc55e"] = "data:image/jpeg;base64," + [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($CncImg))
 }
 $ArtJson = $ArtMap | ConvertTo-Json -Compress
-[System.IO.File]::WriteAllText($ArtJsPath, "window.EXOPLANET_CONCEPT_ART = $ArtJson;`n", [System.Text.Encoding]::UTF8)
+[System.IO.File]::WriteAllText($ArtJsPath, "window.EXOPLANET_CONCEPT_ART = $ArtJson;`n", $Utf8NoBom)
 
 if (Test-Path $TemplatePath) {
     $Tpl = [System.IO.File]::ReadAllText($TemplatePath, [System.Text.Encoding]::UTF8)
     $HtmlOut = $Tpl.Replace("/*__INLINE_JSON_PLACEHOLDER__*/ null", "$JsonText; window.EXOPLANET_CONCEPT_ART = $ArtJson")
-    [System.IO.File]::WriteAllText($IndexPath, $HtmlOut, [System.Text.Encoding]::UTF8)
+    [System.IO.File]::WriteAllText($IndexPath, $HtmlOut, $Utf8NoBom)
 }
 
 Write-Host "Sync complete! Total Archive Planets Indexed in Scanner: $($SortedCatalog.Count)"
